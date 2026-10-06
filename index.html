@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%2326241f%22%2F%3E%3Cpath%20d%3D%22M10%2010h12L10%2022h12%22%20fill%3D%22none%22%20stroke%3D%22%23faf8f4%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<title>Z:\ 變化</title>
+<style>
+:root{--paper:#faf8f4;--bar:#fffdf9;--ink:#26241f;--muted:#7a7366;--line:#e4ddd0;--tag:#f1ece2}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--paper);color:var(--ink);font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.bar{flex:none;height:46px;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--bar);border-bottom:1px solid var(--line)}
+.brand{font-size:15px;font-weight:650;white-space:nowrap;letter-spacing:.01em}
+.tag{font-size:11.5px;line-height:1;color:var(--muted);background:var(--tag);border-radius:999px;padding:5px 9px;white-space:nowrap}
+.tabs{position:relative;flex:1 1 auto;min-width:0;height:100%;display:flex;align-items:stretch;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;border:0;background:none;margin:0;padding:0 11px;font:inherit;font-size:14px;color:var(--muted);white-space:nowrap;cursor:pointer;transition:color .2s}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);font-weight:600}
+.tab:focus-visible{outline:2px solid var(--ink);outline-offset:-6px;border-radius:8px}
+.ink{position:absolute;left:0;bottom:0;height:2px;width:0;border-radius:2px;background:var(--ink);transition:transform .34s cubic-bezier(.2,.8,.2,1),width .34s cubic-bezier(.2,.8,.2,1)}
+.about{font-size:13.5px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.about:hover{color:var(--ink)}
+.stage{position:relative;flex:1 1 auto;min-height:0}
+.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--paper);opacity:0}
+@media (max-width:640px){
+  .bar{gap:10px;padding:0 12px}
+  .brand{display:none}
+  .tab{padding:0 9px}
+  .tabs{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 14px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 14px),transparent 100%)}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <span class="brand">Z:\ 變化</span>
+  <span class="tag">假資料</span>
+  <nav class="tabs" role="tablist" aria-label="版面">
+    <button class="tab" role="tab" data-view="split">前後對照</button>
+    <button class="tab" role="tab" data-view="stack">卡片疊放</button>
+    <button class="tab" role="tab" data-view="windows">浮動視窗</button>
+    <button class="tab" role="tab" data-view="timeline">時間軸</button>
+    <button class="tab" role="tab" data-view="brief">簡報式</button>
+    <button class="tab" role="tab" data-view="paper">晨報版面</button>
+    <span class="ink" id="ink" aria-hidden="true"></span>
+  </nav>
+  <a class="about" href="about.html">說明</a>
+</header>
+<main class="stage"><iframe id="view" title="Z:\ 變化"></iframe></main>
+<script>
+const tabs = [...document.querySelectorAll('.tab')], ink = document.getElementById('ink'), frame = document.getElementById('view');
+const VIEWS = tabs.map(t => t.dataset.view);
+let cur = null, range = null;
+const store = {
+  get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* private window */ } },
+};
+const still = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// fade the layout in or out; always settles, even when the page is not painting
+function fade(to, ms) {
+  const from = getComputedStyle(frame).opacity;
+  if (still() || !frame.animate) { frame.style.opacity = to; return Promise.resolve(); }
+  const a = frame.animate([{ opacity: from }, { opacity: to }], { duration: ms, easing: 'ease' });
+  return new Promise(res => { let done = false; const fin = () => { if (done) return; done = true; frame.style.opacity = to; res(); }; a.onfinish = fin; setTimeout(fin, ms + 250); });
+}
+function placeInk(tab, moving) {
+  ink.style.transition = moving && !still() ? '' : 'none';
+  ink.style.width = Math.max(0, tab.offsetWidth - 22) + 'px';
+  ink.style.transform = `translateX(${tab.offsetLeft + 11}px)`;
+}
+const urlOf = id => id + '.html' + (range ? '?r=' + encodeURIComponent(range) : '');
+function show(id, first) {
+  if (!VIEWS.includes(id)) id = VIEWS[0];
+  if (id === cur) return;
+  cur = id;
+  tabs.forEach(t => { const on = t.dataset.view === id; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+  const tab = tabs.find(t => t.dataset.view === id);
+  placeInk(tab, !first);
+  tab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: first || still() ? 'auto' : 'smooth' });
+  try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// in some browsers */ }
+  store.set('zmon.view', id);
+  if (first) { frame.src = urlOf(id); return; }
+  fade(0, 140).then(() => { frame.src = urlOf(cur); });
+}
+frame.addEventListener('load', () => { if (frame.getAttribute('src')) fade(1, 240); });
+// the layout says which day it is on, so the next layout opens on the same one
+addEventListener('message', e => { if (e.source === frame.contentWindow && e.data && e.data.zmon === 'range') range = String(e.data.id); });
+tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.view)));
+document.querySelector('.tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  e.preventDefault();
+  const i = VIEWS.indexOf(cur), next = tabs[(i + (e.key === 'ArrowRight' ? 1 : VIEWS.length - 1)) % VIEWS.length];
+  next.focus(); show(next.dataset.view);
+});
+addEventListener('hashchange', () => show(location.hash.slice(1)));
+addEventListener('resize', () => placeInk(tabs.find(t => t.dataset.view === cur), false));
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => placeInk(tabs.find(t => t.dataset.view === cur), false));
+show(location.hash.slice(1) || store.get('zmon.view') || VIEWS[0], true);
+</script>
+</body>
+</html>

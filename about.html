@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%2326241f%22%2F%3E%3Cpath%20d%3D%22M10%2010h12L10%2022h12%22%20fill%3D%22none%22%20stroke%3D%22%23faf8f4%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<title>六種版面</title>
+<style>
+:root{--paper:#faf8f4;--ink:#26241f;--muted:#6f6a60;--line:#ddd6c9;--card:#fffdf9;--green:#4a6b42;--green-soft:#eef2ea}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;line-height:1.75;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1260px;margin:0 auto;padding:52px 32px 96px}
+header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:26px}
+.ht{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+h1{font-size:28px;margin:0 0 6px;font-weight:650}
+.back{margin-left:auto;font-size:13.5px;color:var(--ink)}
+.sub{color:var(--muted);font-size:13.5px}
+.ok{background:var(--green-soft);border:1px solid #c2d0bc;border-radius:10px;padding:14px 18px;font-size:14.5px}
+.ok b{color:var(--green)}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.toc a{font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 12px;background:var(--card)}
+.st{margin-top:56px;padding-top:6px}
+.sh{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+h2{font-size:21px;margin:0;font-weight:650;display:flex;align-items:center;gap:10px}
+h2 .no{color:var(--green);font-variant-numeric:tabular-nums}
+.open{margin-left:auto;font-size:13.5px;color:var(--paper);background:var(--ink);text-decoration:none;border-radius:999px;padding:6px 16px;white-space:nowrap}
+.open:hover{background:#3b3830}
+.spec{display:grid;grid-template-columns:64px minmax(0,1fr);gap:4px 12px;margin:12px 0 16px;font-size:14.5px}
+.spec dt{color:var(--green);font-weight:650}
+.spec dd{margin:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.motion{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+figure{margin:0}
+figure img{width:100%;height:auto;aspect-ratio:1280/760;display:block;border:1px solid var(--line);border-radius:10px;background:#fff}
+.motion img{border-radius:8px}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:5px}
+footer{margin-top:72px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px;line-height:1.9}
+footer a{color:var(--ink)}
+@media (max-width:860px){.pair,.motion{grid-template-columns:1fr}.wrap{padding:32px 16px 64px}.open{margin-left:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="ht"><h1>六種版面</h1><a class="back" href="index.html">回到網頁</a></div>
+  <div class="sub">同一份假資料、同樣的功能；每一種的版面、字、點進去的方式、動效都不一樣。</div>
+</header>
+
+<nav class="toc"><a href="#split">1 前後對照</a><a href="#stack">2 卡片疊放</a><a href="#windows">3 浮動視窗</a><a href="#timeline">4 時間軸</a><a href="#brief">5 簡報式</a><a href="#paper">6 晨報版面</a></nav>
+
+<section class="st" id="split">
+  <div class="sh"><h2><span class="no">1</span>前後對照</h2><a class="open" href="index.html#split">打開這一種</a></div>
+  <dl class="spec"><dt>版面</dt><dd>整個畫面左右兩半：左邊「之前」、右邊「之後」，每一筆變化佔一列、左右對齊，中間一欄標刪、增、改名、變大，像比對軟體。</dd><dt>點進去</dt><dd>在那一列底下直接展開細節，不開新視窗。</dd><dt>動效</dt><dd>左右兩欄從兩邊往中間靠攏；點開改名的那一列，新名字從左欄滑到右欄。</dd><dt>適合</dt><dd>一次看清楚「哪裡變了」，最貼近「前後變化」這四個字。</dd></dl>
+  <div class="pair">
+    <figure><img loading="lazy" src="img/split-a.webp" alt=""><figcaption>第一眼</figcaption></figure>
+    <figure><img loading="lazy" src="img/split-b.webp" alt=""><figcaption>點進去之後</figcaption></figure>
+  </div>
+  <div class="motion"><figure><img loading="lazy" src="img/split-m-008.webp" alt=""><figcaption>剛開始</figcaption></figure><figure><img loading="lazy" src="img/split-m-022.webp" alt=""><figcaption>動到一半</figcaption></figure><figure><img loading="lazy" src="img/split-m-050.webp" alt=""><figcaption>快到位</figcaption></figure></div>
+</section>
+
+<section class="st" id="stack">
+  <div class="sh"><h2><span class="no">2</span>卡片疊放</h2><a class="open" href="index.html#stack">打開這一種</a></div>
+  <dl class="spec"><dt>版面</dt><dd>一張一張紙疊在桌上：最新的那張在最上面，前面幾張往左疊、只露出直寫的標題。</dd><dt>點進去</dt><dd>新的一張紙蓋上來；點露出來的標題就翻回那一張。</dd><dt>動效</dt><dd>帶景深的推入：新紙微微斜著滑進來、底下那張往後退一點。</dd><dt>適合</dt><dd>像翻公文一樣一層一層看；畫面最乾淨、一次只看一件事。</dd></dl>
+  <div class="pair">
+    <figure><img loading="lazy" src="img/stack-a.webp" alt=""><figcaption>第一眼</figcaption></figure>
+    <figure><img loading="lazy" src="img/stack-b.webp" alt=""><figcaption>點進去之後</figcaption></figure>
+  </div>
+  <div class="motion"><figure><img loading="lazy" src="img/stack-m-008.webp" alt=""><figcaption>剛開始</figcaption></figure><figure><img loading="lazy" src="img/stack-m-022.webp" alt=""><figcaption>動到一半</figcaption></figure><figure><img loading="lazy" src="img/stack-m-050.webp" alt=""><figcaption>快到位</figcaption></figure></div>
+</section>
+
+<section class="st" id="windows">
+  <div class="sh"><h2><span class="no">3</span>浮動視窗</h2><a class="open" href="index.html#windows">打開這一種</a></div>
+  <dl class="spec"><dt>版面</dt><dd>總覽鋪成桌面上的幾塊小板子；點哪裡，就從哪裡放大出一個視窗，可以拖、可以疊、可以縮到下方，一鍵左右並排。</dd><dt>點進去</dt><dd>一個個獨立的小視窗。</dd><dt>動效</dt><dd>視窗從點的那個位置放大出來；縮小時飛回下方工作列。</dd><dt>適合</dt><dd>同時比對好幾個部門或好幾個檔。</dd></dl>
+  <div class="pair">
+    <figure><img loading="lazy" src="img/windows-a.webp" alt=""><figcaption>第一眼</figcaption></figure>
+    <figure><img loading="lazy" src="img/windows-b.webp" alt=""><figcaption>點進去之後</figcaption></figure>
+  </div>
+  <div class="motion"><figure><img loading="lazy" src="img/windows-m-008.webp" alt=""><figcaption>剛開始</figcaption></figure><figure><img loading="lazy" src="img/windows-m-022.webp" alt=""><figcaption>動到一半</figcaption></figure><figure><img loading="lazy" src="img/windows-m-050.webp" alt=""><figcaption>快到位</figcaption></figure></div>
+</section>
+
+<section class="st" id="timeline">
+  <div class="sh"><h2><span class="no">4</span>時間軸</h2><a class="open" href="index.html#timeline">打開這一種</a></div>
+  <dl class="spec"><dt>版面</dt><dd>上面一整條每天的長條（刪除、改名、大小、新增分色疊起來），下面是按天排的一則一則變化；拖指針換天。</dd><dt>點進去</dt><dd>右邊抽屜滑出來，用一條小時間線畫出「之前那一刻 → 之後那一刻」。</dd><dt>動效</dt><dd>長條從底部長出來；抽屜從右邊滑進、後面變暗；拖指針時下面跟著捲。</dd><dt>適合</dt><dd>看哪一天特別多、追一段時間裡發生了什麼。</dd></dl>
+  <div class="pair">
+    <figure><img loading="lazy" src="img/timeline-a.webp" alt=""><figcaption>第一眼</figcaption></figure>
+    <figure><img loading="lazy" src="img/timeline-b.webp" alt=""><figcaption>點進去之後</figcaption></figure>
+  </div>
+  <div class="motion"><figure><img loading="lazy" src="img/timeline-m-008.webp" alt=""><figcaption>剛開始</figcaption></figure><figure><img loading="lazy" src="img/timeline-m-022.webp" alt=""><figcaption>動到一半</figcaption></figure><figure><img loading="lazy" src="img/timeline-m-050.webp" alt=""><figcaption>快到位</figcaption></figure></div>
+</section>
+
+<section class="st" id="brief">
+  <div class="sh"><h2><span class="no">5</span>簡報式</h2><a class="open" href="index.html#brief">打開這一種</a></div>
+  <dl class="spec"><dt>版面</dt><dd>一份備忘錄：最上面一句判斷，下面一句一句人話，最要緊的排在前面，數字藏在句子後面。</dd><dt>點進去</dt><dd>點一句，那一句底下展開依據；再點一筆，右邊頁緣出現一張白話註記，用虛線連過去。</dd><dt>動效</dt><dd>句子一句一句浮上來；點開的那句畫上底線、其他句子變淡；註記從右邊滑進、連線畫出來。</dd><dt>適合</dt><dd>給不想看清單的人；最符合「人話 → 嚴重度 → 發生什麼 → 數據」。</dd></dl>
+  <div class="pair">
+    <figure><img loading="lazy" src="img/brief-a.webp" alt=""><figcaption>第一眼</figcaption></figure>
+    <figure><img loading="lazy" src="img/brief-b.webp" alt=""><figcaption>點進去之後</figcaption></figure>
+  </div>
+  <div class="motion"><figure><img loading="lazy" src="img/brief-m-008.webp" alt=""><figcaption>剛開始</figcaption></figure><figure><img loading="lazy" src="img/brief-m-022.webp" alt=""><figcaption>動到一半</figcaption></figure><figure><img loading="lazy" src="img/brief-m-050.webp" alt=""><figcaption>快到位</figcaption></figure></div>
+</section>
+
+<section class="st" id="paper">
+  <div class="sh"><h2><span class="no">6</span>晨報版面</h2><a class="open" href="index.html#paper">打開這一種</a></div>
+  <dl class="spec"><dt>版面</dt><dd>一份報紙頭版：報頭「Z:\ 日報」、往期、頭條加一個「前後」方框，下面四欄：要聞（刪除）、異動（改名搬移）、大小變動、新進（新增），最下面是部門索引。</dd><dt>點進去</dt><dd>像翻開一篇文章：從下方升起一頁，左右兩欄寫之前與之後，中間一行大字寫改了什麼。</dd><dt>動效</dt><dd>文章從下面升起，報紙往後退、變暗；切換往期時整版淡入。</dd><dt>適合</dt><dd>每天早上一眼掃完；印出來或截圖給主管最好看。</dd></dl>
+  <div class="pair">
+    <figure><img loading="lazy" src="img/paper-a.webp" alt=""><figcaption>第一眼</figcaption></figure>
+    <figure><img loading="lazy" src="img/paper-b.webp" alt=""><figcaption>點進去之後</figcaption></figure>
+  </div>
+  <div class="motion"><figure><img loading="lazy" src="img/paper-m-008.webp" alt=""><figcaption>剛開始</figcaption></figure><figure><img loading="lazy" src="img/paper-m-022.webp" alt=""><figcaption>動到一半</figcaption></figure><figure><img loading="lazy" src="img/paper-m-050.webp" alt=""><figcaption>快到位</figcaption></figure></div>
+</section>
+<footer>
+資料是模擬出來的一週（8 個部門、402～499 個檔），檔名、工程名、廠商名都是假的。
+</footer>
+</div>
+</body>
+</html>

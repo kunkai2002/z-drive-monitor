@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%2326241f%22%2F%3E%3Cpath%20d%3D%22M10%2010h12L10%2022h12%22%20fill%3D%22none%22%20stroke%3D%22%23faf8f4%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Z:\ 浮動視窗</title>
+<style>
+:root{--desk:#e4e6e1;--dot:rgba(70,80,70,.11);--panel:rgba(255,255,255,.72);--win:#fbfbf9;--bar:#f1f2ee;--ink:#1f2320;--ink2:#454b46;--muted:#727a73;--faint:#a2a9a2;
+  --line:#dfe2dc;--line2:#c9cec6;--accent:#3f6b55;--add:#4d7a43;--del:#a64b37;--ren:#3e6887;--size:#986a19;--time:#7d847d;--ok:#4a6b42;--warn:#a3711f;--bad:#9c3a2e;
+  --ui:"Segoe UI Variable Text","Segoe UI","Microsoft JhengHei UI","Noto Sans TC",sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{color:var(--ink);font:13px/1.5 var(--ui);overflow:hidden;-webkit-font-smoothing:antialiased;background:var(--desk)}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:5px}
+svg{display:block;flex:0 0 auto}
+.num{font-variant-numeric:tabular-nums}
+mark{background:color-mix(in srgb,var(--c,var(--ren)) 20%,transparent);color:inherit;border-radius:2px;padding:0 1px}
+.c-add{--c:var(--add)} .c-del{--c:var(--del)} .c-ren{--c:var(--ren)} .c-size{--c:var(--size)} .c-time{--c:var(--time)}
+.menu{height:40px;display:flex;align-items:center;gap:6px;padding:0 14px;background:rgba(250,251,248,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line2);position:relative;z-index:5000}
+.menu b{font-weight:700;margin-right:12px;letter-spacing:.01em}
+.mb{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:5px;color:var(--ink2);white-space:nowrap}
+.mb:hover{background:rgba(0,0,0,.05)}
+.mb[aria-pressed="true"]{background:var(--ink);color:#fff}
+.menu .sp{flex:1}
+.menu .tool{display:flex;align-items:center;gap:6px}
+.desk{position:relative;height:calc(100% - 40px);background-image:radial-gradient(var(--dot) 1px,transparent 1.2px);background-size:18px 18px;overflow:hidden}
+/* desktop widgets */
+.wg{position:absolute;inset:18px 18px 64px 18px;display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:auto auto 1fr;gap:14px}
+.wd{background:var(--panel);border:1px solid rgba(255,255,255,.9);border-radius:12px;padding:16px 18px;box-shadow:0 1px 2px rgba(30,40,30,.05);backdrop-filter:blur(6px);min-height:0;overflow:auto}
+.wd h3{margin:0 0 10px;font-size:11.5px;color:var(--muted);letter-spacing:.12em;font-weight:700}
+.w-hero{grid-column:1 / 3}
+.w-types{grid-column:3}
+.w-first{grid-column:1}
+.w-depts{grid-column:2 / 4;grid-row:2 / 4}
+.w-days{grid-column:1;grid-row:3}
+.sev{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--sv)}
+.sev i{width:9px;height:9px;border-radius:50%;background:var(--sv)}
+.sev.ok{--sv:var(--ok)} .sev.warn{--sv:var(--warn)} .sev.bad{--sv:var(--bad)}
+.hero{font-size:22px;font-weight:700;line-height:1.38;margin:6px 0}
+.ba{color:var(--muted)} .ba b{color:var(--ink2)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{border-radius:9px;padding:10px 12px;background:#fff;border:1px solid var(--line)}
+.tile:hover{border-color:var(--c)}
+.tile b{display:block;font-size:24px;line-height:1.2;color:var(--c)}
+.tile span{font-size:12px;color:var(--muted)}
+.fi{display:block;width:100%;padding:8px 10px;border-radius:8px;margin-bottom:6px;background:#fff;border:1px solid var(--line)}
+.fi:hover{border-color:var(--c)}
+.fi em{font-style:normal;font-weight:700;font-size:11.5px;color:var(--c);margin-right:6px}
+.fi b{font-weight:600}
+.fi p{margin:2px 0 0;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr{display:grid;grid-template-columns:minmax(0,1fr) 140px 54px;gap:12px;align-items:center;width:100%;padding:9px 10px;border-radius:8px}
+.dr:hover{background:#fff}
+.dr b{font-weight:600} .dr small{color:var(--faint);margin-left:6px}
+.dr .bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--line)}
+.dr .bar span{background:var(--c)}
+.dr .n{text-align:right;font-weight:700}
+.quiet{font-size:11.5px;color:var(--faint);padding:8px 10px}
+.chart{display:flex;align-items:flex-end;gap:6px;height:110px}
+.cb{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;border-radius:6px;padding:2px 0}
+.cb:hover{background:#fff}
+.cb i{width:60%;max-width:20px;display:flex;flex-direction:column;justify-content:flex-end}
+.cb i b{display:block;background:var(--line2);border-radius:2px 2px 0 0} .cb i b.d{background:var(--del);border-radius:0}
+.cb span{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.cb.on i b{background:var(--ink2)} .cb.on i b.d{background:var(--del)} .cb.on span{color:var(--ink);font-weight:700}
+/* windows */
+.win{position:absolute;display:flex;flex-direction:column;background:var(--win);border:1px solid var(--line2);border-radius:10px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(20,30,20,.08),0 12px 32px -10px rgba(20,30,20,.35);min-width:300px;min-height:200px;transform-origin:0 0}
+.win.front{box-shadow:0 1px 2px rgba(20,30,20,.1),0 22px 50px -14px rgba(20,30,20,.48);border-color:#b8beb5}
+.win.dragging{box-shadow:0 30px 70px -18px rgba(20,30,20,.55)}
+.wt{height:36px;flex:0 0 36px;display:flex;align-items:center;gap:8px;padding:0 6px 0 12px;background:var(--bar);border-bottom:1px solid var(--line);cursor:grab;user-select:none}
+.win:not(.front) .wt{background:#f6f6f3;color:var(--muted)}
+.wt .tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.wt .tt small{font-weight:400;color:var(--muted);margin-left:6px}
+.wt .dot{width:8px;height:8px;border-radius:50%;background:var(--c);flex:0 0 8px}
+.wb{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--muted)}
+.wb:hover{background:rgba(0,0,0,.06);color:var(--ink)}
+.wc{flex:1;overflow:auto;padding:12px 14px 18px}
+.it{display:block;width:100%;padding:8px 10px;border-radius:7px;position:relative}
+.it:hover{background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.it .l1{display:flex;gap:10px;align-items:baseline}
+.it .l1 b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.it .l1 b s{text-decoration:none;color:var(--muted);font-weight:400}
+.it .l1 span{flex:0 0 auto;font-size:12px;color:var(--muted)}
+.it .l2{display:block;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.it .tg{font-size:11px;font-weight:700;color:var(--c);margin-right:6px}
+.grp{font-size:11.5px;font-weight:700;color:var(--c);margin:12px 4px 4px;letter-spacing:.06em}
+.grp:first-child{margin-top:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{padding:3px 10px;border-radius:999px;border:1px solid var(--line2);font-size:12px;background:#fff}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.more{display:block;margin:10px auto 0;padding:5px 14px;border-radius:999px;border:1px solid var(--line2);font-size:12px;background:#fff}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.side{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#fff;min-width:0}
+.side.b{background:#f5f6f2}
+.side h4{margin:0 0 6px;font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.08em}
+.side .nm{font-weight:700;font-size:14px;overflow-wrap:anywhere}
+.side .none{color:var(--faint);font-size:14px}
+.side dl{display:grid;grid-template-columns:52px minmax(0,1fr);gap:4px 8px;margin:8px 0 0;font-size:12px}
+.side dt{color:var(--faint)} .side dd{margin:0;overflow-wrap:anywhere}
+.side .p{color:var(--muted)} .side .p mark{color:var(--ink)}
+.sep{font-style:normal;color:var(--faint);margin:0 3px}
+.kind{font-size:12px;font-weight:700;color:var(--c);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--line2);border-radius:6px;font-size:12px;background:#fff}
+.btn:hover{border-color:var(--ink2)}
+.btn.done{color:var(--ok);border-color:var(--ok)}
+.hint{font-size:11.5px;color:var(--muted);margin-top:8px}
+.files{margin-top:12px;border-top:1px solid var(--line)}
+.files button{display:flex;gap:8px;width:100%;padding:6px 4px;border-bottom:1px dashed var(--line);font-size:12px}
+.files button:hover{background:#fff}
+.files button span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files button span:last-child{color:var(--muted)}
+.dock{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;padding:6px;border-radius:12px;background:rgba(250,251,248,.8);backdrop-filter:blur(10px);border:1px solid var(--line2);z-index:4000}
+.dock:empty{display:none}
+.dk{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;background:#fff;border:1px solid var(--line);font-size:12px;max-width:180px}
+.dk span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dk i{width:7px;height:7px;border-radius:50%;background:var(--c);flex:0 0 7px}
+@media (max-width:1100px){.wg{grid-template-columns:1fr 1fr}.w-hero{grid-column:1 / 3}.w-types{grid-column:1}.w-first{grid-column:2}.w-depts{grid-column:1 / 3;grid-row:auto}.w-days{grid-column:1 / 3;grid-row:auto}}
+/* phones and short windows: the widgets scroll instead of squeezing; windows still float over the desk */
+@media (max-width:760px),(max-height:560px){
+  .menu{overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  .menu::-webkit-scrollbar{display:none}
+  .menu b{white-space:nowrap}
+  .wg{inset:0;padding:14px 14px 72px;overflow-y:auto;grid-template-rows:none;align-content:start}
+  .wd{overflow:visible;min-height:auto}
+}
+@media (max-width:640px){
+  .wg{grid-template-columns:minmax(0,1fr)}
+  .w-hero,.w-types,.w-first,.w-depts,.w-days{grid-column:1;grid-row:auto}
+  .hero{font-size:19px}
+  .dr{grid-template-columns:minmax(0,1fr) 72px 44px;gap:10px}
+}
+</style>
+</head>
+<body>
+<nav class="menu" id="menu"></nav>
+<main class="desk" id="desk"><div class="wg" id="wg"></div><div class="dock" id="dock"></div></main>
+<script>
+const DATA = {"v":1,"drive":"Z:","shareName":"示範資料（全部是假的）","snapRoot":"Z:\\@Recently-Snapshot\\{snap}","generatedAt":1791270183,"depts":[{"name":"工程內業課","code":"RC"},{"name":"建機室技術組","code":"BD"},{"name":"建機成本組","code":"Price"},{"name":"社會宅銷售","code":"PM"},{"name":"行政二","code":"AD2"},{"name":"行政四","code":"AD4"},{"name":"設備安檢","code":"Safe"},{"name":"關務","code":"IPXP"}],"points":[{"snap":"DEMO_2026-09-29","at":1790618400},{"snap":"DEMO_2026-09-30","at":1790704800},{"snap":"DEMO_2026-10-01","at":1790791200},{"snap":"DEMO_2026-10-02","at":1790877600},{"snap":"DEMO_2026-10-03","at":1790964000},{"snap":"DEMO_2026-10-04","at":1791050400},{"snap":"DEMO_2026-10-05","at":1791136800},{"snap":"DEMO_2026-10-06","at":1791223200}],"ranges":[{"id":"day:DEMO_2026-09-30","kind":"day","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"add","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\1. 已结案工程\\BTJ12 示範工程12（结算：736,000,000VND）\\验收款 40%\\9. 竣工图.pdf","s":54047,"t":1790650800},{"k":"add","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\1. 已结案工程\\BTJ13 示範工程13（结算：273,000,000VND）\\首款 30%\\9. 补充协议.pdf","s":5065,"t":1790654400},{"k":"add","d":2,"p":"建机成本组 - Price dep\\甲廠_TV 2521-03 示範工程 示範廠商_2026.09.29.pdf","s":22231,"t":1790665200},{"k":"add","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\检查报告-05.xlsx","s":1642,"t":1790672400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40001.xls","s":3556,"t":1790650800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40002.xls","s":3861,"t":1790654400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40003.xls","s":4096,"t":1790658000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40004.xls","s":5209,"t":1790661600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40005.xls","s":3945,"t":1790665200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40006.xls","s":4349,"t":1790668800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40007.xls","s":3353,"t":1790672400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40008.xls","s":3004,"t":1790647200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40009.xls","s":964,"t":1790650800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40010.xls","s":883,"t":1790654400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40011.xls","s":5234,"t":1790658000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40012.xls","s":3907,"t":1790661600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40013.xls","s":2669,"t":1790665200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40014.xls","s":3220,"t":1790668800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40015.xls","s":6437,"t":1790672400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40016.xls","s":4342,"t":1790647200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40017.xls","s":2780,"t":1790650800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40018.xls","s":887,"t":1790654400},{"k":"size","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ21 示範工程21（结算：175,000,000VND）\\内部资料\\1. 预算表.xlsx","s0":4714,"s1":8810,"t0":1782151200,"t1":1790668800}],"short":"09/29 週二","phrase":"09/29 週二","span":"09/29 01:00 → 09/30 01:00","before":{"id":"DEMO_2026-09-29","snap":"DEMO_2026-09-29","at":1790618400,"files":402,"bytes":13230564},"after":{"id":"DEMO_2026-09-30","snap":"DEMO_2026-09-30","at":1790704800,"files":424,"bytes":13380341},"deptStat":[[191,193],[30,30],[20,21],[15,15],[10,10],[15,15],[16,17],[105,123]],"deptFiles":[191,30,20,15,10,15,16,105],"base":30,"days":["day:DEMO_2026-09-30"]},{"id":"day:DEMO_2026-10-01","kind":"day","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"fren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ13 示範工程13（结算：239,000,000VND）\\保固款 5%","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ13 示範工程13（结算：239,000,000VND）\\TTBH 5%","mv":false,"n":4,"b":102123,"f":[{"r":"1. 方案签呈.pdf","s":14653,"t":1780682400},{"r":"2. 竣工图.pdf","s":42740,"t":1775584800},{"r":"3. 记事表.xlsx","s":26315,"t":1783274400},{"r":"4. 设计图.pdf","s":18415,"t":1774720800}]},{"k":"ren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ21 示範工程21（结算：432,000,000VND）\\首款 30%\\1. 预算表（定稿）.xlsx","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ21 示範工程21（结算：432,000,000VND）\\首款 30%\\1. 预算表.xlsx","s":13295,"t":1780336800},{"k":"fadd","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve hoan cong","n":6,"b":564873,"f":[{"r":"HC-01.pdf","s":66600,"t":1790740800},{"r":"HC-02.pdf","s":99923,"t":1790744400},{"r":"HC-03.pdf","s":90048,"t":1790748000},{"r":"HC-04.pdf","s":149543,"t":1790751600},{"r":"HC-05.pdf","s":76303,"t":1790755200},{"r":"HC-06.pdf","s":82456,"t":1790758800}]},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41001.xls","s":3396,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41002.xls","s":6397,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41003.xls","s":2699,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41004.xls","s":2626,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41005.xls","s":4007,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41006.xls","s":806,"t":1790755200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41007.xls","s":6088,"t":1790758800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41008.xls","s":7042,"t":1790733600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41009.xls","s":3157,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41010.xls","s":5287,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41011.xls","s":6843,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41012.xls","s":4067,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41013.xls","s":2959,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41014.xls","s":2031,"t":1790755200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41015.xls","s":6537,"t":1790758800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41016.xls","s":3706,"t":1790733600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41017.xls","s":6006,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41018.xls","s":5567,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41019.xls","s":6105,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41020.xls","s":2132,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41021.xls","s":5434,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41022.xls","s":5307,"t":1790755200}],"short":"09/30 週三","phrase":"09/30 週三","span":"09/30 01:00 → 10/01 01:00","before":{"id":"DEMO_2026-09-30","snap":"DEMO_2026-09-30","at":1790704800,"files":424,"bytes":13380341},"after":{"id":"DEMO_2026-10-01","snap":"DEMO_2026-10-01","at":1790791200,"files":452,"bytes":14043413},"deptStat":[[193,193],[30,36],[21,21],[15,15],[10,10],[15,15],[17,17],[123,145]],"deptFiles":[193,30,21,15,10,15,17,123],"base":27,"days":["day:DEMO_2026-10-01"]},{"id":"day:DEMO_2026-10-02","kind":"day","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"mov","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\第1期\\1. 设计图.pdf","p0":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\1. 设计图.pdf","s":27149,"t":1778608800,"nm":false,"sure":true},{"k":"mov","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\第1期\\2. 结算表.xlsx","p0":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\2. 结算表.xlsx","s":44095,"t":1781028000,"nm":false,"sure":true},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849001_02092026\\DEMO_TLXNK_02092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 01.xlsx","s":1298,"t":1786384800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849002_03092026\\DEMO_TLXNK_03092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 02.xlsx","s":1435,"t":1786471200,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849003_04092026\\DEMO_TLXNK_04092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 03.xlsx","s":1222,"t":1786557600,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849004_05092026\\DEMO_TLXNK_05092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 04.xlsx","s":626,"t":1786644000,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849005_06092026\\DEMO_TLXNK_06092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 05.xlsx","s":1185,"t":1786730400,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849006_07092026\\DEMO_TLXNK_07092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 06.xlsx","s":1219,"t":1786816800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849007_08092026\\DEMO_TLXNK_08092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 07.xlsx","s":686,"t":1786903200,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849008_09092026\\DEMO_TLXNK_09092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 08.xlsx","s":1097,"t":1786989600,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849009_01092026\\DEMO_TLXNK_01092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 09.xlsx","s":1166,"t":1787076000,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849010_02092026\\DEMO_TLXNK_02092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 10.xlsx","s":1101,"t":1787162400,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849011_03092026\\DEMO_TLXNK_03092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 11.xlsx","s":609,"t":1787248800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849012_04092026\\DEMO_TLXNK_04092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 12.xlsx","s":1396,"t":1787335200,"nm":true,"sure":false},{"k":"add","d":4,"p":"行政二 - AD2 dep\\投資證書\\ĐKKD lần 19_01102026.pdf","s":14354,"t":1790827200},{"k":"fadd","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10","n":15,"b":65931,"f":[{"r":"TK_01102026_42001.xls","s":6036,"t":1790823600},{"r":"TK_01102026_42002.xls","s":6255,"t":1790827200},{"r":"TK_01102026_42003.xls","s":4156,"t":1790830800},{"r":"TK_01102026_42004.xls","s":1992,"t":1790834400},{"r":"TK_01102026_42005.xls","s":2110,"t":1790838000},{"r":"TK_01102026_42006.xls","s":5392,"t":1790841600},{"r":"TK_01102026_42007.xls","s":4458,"t":1790845200},{"r":"TK_01102026_42008.xls","s":5279,"t":1790820000},{"r":"TK_01102026_42009.xls","s":1463,"t":1790823600},{"r":"TK_01102026_42010.xls","s":5696,"t":1790827200},{"r":"TK_01102026_42011.xls","s":7437,"t":1790830800},{"r":"TK_01102026_42012.xls","s":7091,"t":1790834400},{"r":"TK_01102026_42013.xls","s":3678,"t":1790838000},{"r":"TK_01102026_42014.xls","s":2075,"t":1790841600},{"r":"TK_01102026_42015.xls","s":2813,"t":1790845200}]}],"short":"10/01 週四","phrase":"10/01 週四","span":"10/01 01:00 → 10/02 01:00","before":{"id":"DEMO_2026-10-01","snap":"DEMO_2026-10-01","at":1790791200,"files":452,"bytes":14043413},"after":{"id":"DEMO_2026-10-02","snap":"DEMO_2026-10-02","at":1790877600,"files":468,"bytes":14123698},"deptStat":[[193,193],[36,36],[21,21],[15,15],[10,11],[15,15],[17,17],[145,160]],"deptFiles":[193,36,21,15,10,15,17,145],"base":27,"days":["day:DEMO_2026-10-02"]},{"id":"day:DEMO_2026-10-03","kind":"day","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"fadd","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ24 示範工程24（新）","n":5,"b":192257,"f":[{"r":"首款 30%\\1. 合同.pdf","s":35259,"t":1790910000},{"r":"首款 30%\\2. 预算表.xlsx","s":74648,"t":1790913600},{"r":"首款 30%\\3. 设计图.pdf","s":48112,"t":1790917200},{"r":"首款 30%\\4. 方案签呈.pdf","s":6931,"t":1790920800},{"r":"首款 30%\\5. 施工进度表.xlsx","s":27307,"t":1790924400}]},{"k":"add","d":2,"p":"建机成本组 - Price dep\\乙廠_TV 2523-01 示範工程 示範廠商_2026.10.02.pdf","s":11453,"t":1790928000},{"k":"add","d":2,"p":"建机成本组 - Price dep\\甲廠_TV 2522-07 示範工程 示範廠商_2026.10.02.pdf","s":19756,"t":1790924400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43001.xls","s":2775,"t":1790910000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43002.xls","s":4154,"t":1790913600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43003.xls","s":6160,"t":1790917200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43004.xls","s":3992,"t":1790920800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43005.xls","s":6053,"t":1790924400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43006.xls","s":1186,"t":1790928000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43007.xls","s":2758,"t":1790931600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43008.xls","s":5216,"t":1790906400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43009.xls","s":2158,"t":1790910000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43010.xls","s":5962,"t":1790913600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43011.xls","s":4379,"t":1790917200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43012.xls","s":5489,"t":1790920800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43013.xls","s":3749,"t":1790924400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43014.xls","s":2790,"t":1790928000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43015.xls","s":6972,"t":1790931600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43016.xls","s":4495,"t":1790906400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43017.xls","s":5614,"t":1790910000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43018.xls","s":3738,"t":1790913600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43019.xls","s":2837,"t":1790917200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_02102026_43020.xls","s":3658,"t":1790920800},{"k":"time","d":6,"p":"设备安检 - Safe dep\\乙廠\\2026\\回覆报告-02.xlsx","s":2246,"t0":1776794400,"t1":1790906400},{"k":"time","d":6,"p":"设备安检 - Safe dep\\乙廠\\2026\\检查报告-02.xlsx","s":1023,"t0":1776794400,"t1":1790906400}],"short":"10/02 週五","phrase":"10/02 週五","span":"10/02 01:00 → 10/03 01:00","before":{"id":"DEMO_2026-10-02","snap":"DEMO_2026-10-02","at":1790877600,"files":468,"bytes":14123698},"after":{"id":"DEMO_2026-10-03","snap":"DEMO_2026-10-03","at":1790964000,"files":495,"bytes":14431299},"deptStat":[[193,198],[36,36],[21,23],[15,15],[11,11],[15,15],[17,17],[160,180]],"deptFiles":[193,36,21,15,11,15,17,160],"base":30,"days":["day:DEMO_2026-10-03"]},{"id":"day:DEMO_2026-10-04","kind":"day","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"ren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ23 示範工程23（结算：222,000,000VND）\\验收款 40%\\1. 方案签呈-簽核版.pdf","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ23 示範工程23（结算：222,000,000VND）\\验收款 40%\\1. 方案签呈.pdf","s":15687,"t":1782324000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_03102026_44001.xls","s":1538,"t":1790996400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_03102026_44002.xls","s":7298,"t":1791000000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_03102026_44003.xls","s":6454,"t":1791003600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_03102026_44004.xls","s":6163,"t":1791007200}],"short":"10/03 週六","phrase":"10/03 週六","span":"10/03 01:00 → 10/04 01:00","before":{"id":"DEMO_2026-10-03","snap":"DEMO_2026-10-03","at":1790964000,"files":495,"bytes":14431299},"after":{"id":"DEMO_2026-10-04","snap":"DEMO_2026-10-04","at":1791050400,"files":499,"bytes":14452752},"deptStat":[[198,198],[36,36],[23,23],[15,15],[11,11],[15,15],[17,17],[180,184]],"deptFiles":[198,36,23,15,11,15,17,180],"base":30,"days":["day:DEMO_2026-10-04"]},{"id":"day:DEMO_2026-10-05","kind":"day","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[],"short":"10/04 週日","phrase":"10/04 週日","span":"10/04 01:00 → 10/05 01:00","before":{"id":"DEMO_2026-10-04","snap":"DEMO_2026-10-04","at":1791050400,"files":499,"bytes":14452752},"after":{"id":"DEMO_2026-10-05","snap":"DEMO_2026-10-05","at":1791136800,"files":499,"bytes":14452752},"deptStat":[[198,198],[36,36],[23,23],[15,15],[11,11],[15,15],[17,17],[184,184]],"deptFiles":[198,36,23,15,11,15,17,184],"base":30,"days":["day:DEMO_2026-10-05"]},{"id":"day:DEMO_2026-10-06","kind":"day","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"fren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ22 示範工程22（结算：807,000,000VND）\\付款\\首款 30%","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ22 示範工程22（结算：807,000,000VND）\\首款 30%","mv":true,"n":3,"b":154193,"f":[{"r":"1. 设计图.pdf","s":74259,"t":1775584800},{"r":"2. 结算表.xlsx","s":73362,"t":1783879200},{"r":"3. 保固书.pdf","s":6572,"t":1776448800}]},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-01_rev1.dwg","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-01.dwg","s":71961,"t":1780941600},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-02_rev1.dwg","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-02.dwg","s":180318,"t":1781028000},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-03_rev1.pdf","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-03.pdf","s":83908,"t":1773856800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45001.xls","s":5566,"t":1791169200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45002.xls","s":1258,"t":1791172800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45003.xls","s":6946,"t":1791176400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45004.xls","s":4596,"t":1791180000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45005.xls","s":4954,"t":1791183600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45006.xls","s":6537,"t":1791187200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45007.xls","s":1965,"t":1791190800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45008.xls","s":4087,"t":1791165600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45009.xls","s":4242,"t":1791169200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45010.xls","s":4667,"t":1791172800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45011.xls","s":6608,"t":1791176400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45012.xls","s":2544,"t":1791180000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45013.xls","s":1515,"t":1791183600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45014.xls","s":1768,"t":1791187200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45015.xls","s":6338,"t":1791190800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10\\TK_05102026_45016.xls","s":2203,"t":1791165600},{"k":"del","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ12 示範工程12（结算：640,000,000VND）\\首款 30%\\1. 设计图.pdf","s":29557,"t":1778522400},{"k":"fdel","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 08\\旧报关","n":25,"b":285789,"f":[{"r":"old-001.pdf","s":7338,"t":1783706400},{"r":"old-002.pdf","s":6393,"t":1783706400},{"r":"old-003.pdf","s":12274,"t":1783706400},{"r":"old-004.pdf","s":5702,"t":1783706400},{"r":"old-005.pdf","s":9420,"t":1783706400},{"r":"old-006.pdf","s":21664,"t":1783706400},{"r":"old-007.pdf","s":11879,"t":1783706400},{"r":"old-008.pdf","s":5710,"t":1783706400},{"r":"old-009.pdf","s":5501,"t":1783706400},{"r":"old-010.pdf","s":13380,"t":1783706400},{"r":"old-011.pdf","s":10204,"t":1783706400},{"r":"old-012.pdf","s":15990,"t":1783706400},{"r":"old-013.pdf","s":17258,"t":1783706400},{"r":"old-014.pdf","s":8082,"t":1783706400},{"r":"old-015.pdf","s":18133,"t":1783706400},{"r":"old-016.pdf","s":19215,"t":1783706400},{"r":"old-017.pdf","s":20740,"t":1783706400},{"r":"old-018.pdf","s":11197,"t":1783706400},{"r":"old-019.pdf","s":9578,"t":1783706400},{"r":"old-020.pdf","s":14638,"t":1783706400},{"r":"old-021.pdf","s":7194,"t":1783706400},{"r":"old-022.pdf","s":12553,"t":1783706400},{"r":"old-023.pdf","s":8648,"t":1783706400},{"r":"old-024.pdf","s":4026,"t":1783706400},{"r":"old-025.pdf","s":9072,"t":1783706400}]},{"k":"size","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\回覆报告-01.xlsx","s0":1312,"s1":3360,"t0":1775066400,"t1":1791172800},{"k":"size","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\检查报告-01.xlsx","s0":1502,"s1":7646,"t0":1775066400,"t1":1791169200}],"short":"10/05 週一","phrase":"10/05 週一","span":"10/05 01:00 → 10/06 01:00","before":{"id":"DEMO_2026-10-05","snap":"DEMO_2026-10-05","at":1791136800,"files":499,"bytes":14452752},"after":{"id":"DEMO_2026-10-06","snap":"DEMO_2026-10-06","at":1791223200,"files":489,"bytes":14211392},"deptStat":[[198,197],[36,36],[23,23],[15,15],[11,11],[15,15],[17,17],[184,175]],"deptFiles":[198,36,23,15,11,15,17,184],"base":27,"days":["day:DEMO_2026-10-06"]},{"id":"week","kind":"span","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"fren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ13 示範工程13（结算：239,000,000VND）\\保固款 5%","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ13 示範工程13（结算：239,000,000VND）\\TTBH 5%","mv":false,"n":4,"b":102123,"f":[{"r":"1. 方案签呈.pdf","s":14653,"t":1780682400},{"r":"2. 竣工图.pdf","s":42740,"t":1775584800},{"r":"3. 记事表.xlsx","s":26315,"t":1783274400},{"r":"4. 设计图.pdf","s":18415,"t":1774720800}]},{"k":"fren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ22 示範工程22（结算：807,000,000VND）\\付款\\首款 30%","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ22 示範工程22（结算：807,000,000VND）\\首款 30%","mv":true,"n":3,"b":154193,"f":[{"r":"1. 设计图.pdf","s":74259,"t":1775584800},{"r":"2. 结算表.xlsx","s":73362,"t":1783879200},{"r":"3. 保固书.pdf","s":6572,"t":1776448800}]},{"k":"mov","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\第1期\\1. 设计图.pdf","p0":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\1. 设计图.pdf","s":27149,"t":1778608800,"nm":false,"sure":true},{"k":"mov","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\第1期\\2. 结算表.xlsx","p0":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\2. 结算表.xlsx","s":44095,"t":1781028000,"nm":false,"sure":true},{"k":"ren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ21 示範工程21（结算：432,000,000VND）\\首款 30%\\1. 预算表（定稿）.xlsx","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ21 示範工程21（结算：432,000,000VND）\\首款 30%\\1. 预算表.xlsx","s":13295,"t":1780336800},{"k":"ren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ23 示範工程23（结算：222,000,000VND）\\验收款 40%\\1. 方案签呈-簽核版.pdf","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ23 示範工程23（结算：222,000,000VND）\\验收款 40%\\1. 方案签呈.pdf","s":15687,"t":1782324000},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-01_rev1.dwg","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-01.dwg","s":71961,"t":1780941600},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-02_rev1.dwg","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-02.dwg","s":180318,"t":1781028000},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-03_rev1.pdf","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-03.pdf","s":83908,"t":1773856800},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849001_02092026\\DEMO_TLXNK_02092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 01.xlsx","s":1298,"t":1786384800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849002_03092026\\DEMO_TLXNK_03092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 02.xlsx","s":1435,"t":1786471200,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849003_04092026\\DEMO_TLXNK_04092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 03.xlsx","s":1222,"t":1786557600,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849004_05092026\\DEMO_TLXNK_05092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 04.xlsx","s":626,"t":1786644000,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849005_06092026\\DEMO_TLXNK_06092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 05.xlsx","s":1185,"t":1786730400,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849006_07092026\\DEMO_TLXNK_07092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 06.xlsx","s":1219,"t":1786816800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849007_08092026\\DEMO_TLXNK_08092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 07.xlsx","s":686,"t":1786903200,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849008_09092026\\DEMO_TLXNK_09092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 08.xlsx","s":1097,"t":1786989600,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849009_01092026\\DEMO_TLXNK_01092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 09.xlsx","s":1166,"t":1787076000,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849010_02092026\\DEMO_TLXNK_02092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 10.xlsx","s":1101,"t":1787162400,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849011_03092026\\DEMO_TLXNK_03092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 11.xlsx","s":609,"t":1787248800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849012_04092026\\DEMO_TLXNK_04092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 12.xlsx","s":1396,"t":1787335200,"nm":true,"sure":false},{"k":"fadd","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ24 示範工程24（新）","n":5,"b":192257,"f":[{"r":"首款 30%\\1. 合同.pdf","s":35259,"t":1790910000},{"r":"首款 30%\\2. 预算表.xlsx","s":74648,"t":1790913600},{"r":"首款 30%\\3. 设计图.pdf","s":48112,"t":1790917200},{"r":"首款 30%\\4. 方案签呈.pdf","s":6931,"t":1790920800},{"r":"首款 30%\\5. 施工进度表.xlsx","s":27307,"t":1790924400}]},{"k":"fadd","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve hoan cong","n":6,"b":564873,"f":[{"r":"HC-01.pdf","s":66600,"t":1790740800},{"r":"HC-02.pdf","s":99923,"t":1790744400},{"r":"HC-03.pdf","s":90048,"t":1790748000},{"r":"HC-04.pdf","s":149543,"t":1790751600},{"r":"HC-05.pdf","s":76303,"t":1790755200},{"r":"HC-06.pdf","s":82456,"t":1790758800}]},{"k":"add","d":2,"p":"建机成本组 - Price dep\\乙廠_TV 2523-01 示範工程 示範廠商_2026.10.02.pdf","s":11453,"t":1790928000},{"k":"add","d":2,"p":"建机成本组 - Price dep\\甲廠_TV 2522-07 示範工程 示範廠商_2026.10.02.pdf","s":19756,"t":1790924400},{"k":"add","d":4,"p":"行政二 - AD2 dep\\投資證書\\ĐKKD lần 19_01102026.pdf","s":14354,"t":1790827200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41001.xls","s":3396,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41002.xls","s":6397,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41003.xls","s":2699,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41004.xls","s":2626,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41005.xls","s":4007,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41006.xls","s":806,"t":1790755200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41007.xls","s":6088,"t":1790758800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41008.xls","s":7042,"t":1790733600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41009.xls","s":3157,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41010.xls","s":5287,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41011.xls","s":6843,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41012.xls","s":4067,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41013.xls","s":2959,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41014.xls","s":2031,"t":1790755200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41015.xls","s":6537,"t":1790758800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41016.xls","s":3706,"t":1790733600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41017.xls","s":6006,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41018.xls","s":5567,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41019.xls","s":6105,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41020.xls","s":2132,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41021.xls","s":5434,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41022.xls","s":5307,"t":1790755200},{"k":"fadd","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10","n":55,"b":237313,"f":[{"r":"TK_01102026_42001.xls","s":6036,"t":1790823600},{"r":"TK_01102026_42002.xls","s":6255,"t":1790827200},{"r":"TK_01102026_42003.xls","s":4156,"t":1790830800},{"r":"TK_01102026_42004.xls","s":1992,"t":1790834400},{"r":"TK_01102026_42005.xls","s":2110,"t":1790838000},{"r":"TK_01102026_42006.xls","s":5392,"t":1790841600},{"r":"TK_01102026_42007.xls","s":4458,"t":1790845200},{"r":"TK_01102026_42008.xls","s":5279,"t":1790820000},{"r":"TK_01102026_42009.xls","s":1463,"t":1790823600},{"r":"TK_01102026_42010.xls","s":5696,"t":1790827200},{"r":"TK_01102026_42011.xls","s":7437,"t":1790830800},{"r":"TK_01102026_42012.xls","s":7091,"t":1790834400},{"r":"TK_01102026_42013.xls","s":3678,"t":1790838000},{"r":"TK_01102026_42014.xls","s":2075,"t":1790841600},{"r":"TK_01102026_42015.xls","s":2813,"t":1790845200},{"r":"TK_02102026_43001.xls","s":2775,"t":1790910000},{"r":"TK_02102026_43002.xls","s":4154,"t":1790913600},{"r":"TK_02102026_43003.xls","s":6160,"t":1790917200},{"r":"TK_02102026_43004.xls","s":3992,"t":1790920800},{"r":"TK_02102026_43005.xls","s":6053,"t":1790924400},{"r":"TK_02102026_43006.xls","s":1186,"t":1790928000},{"r":"TK_02102026_43007.xls","s":2758,"t":1790931600},{"r":"TK_02102026_43008.xls","s":5216,"t":1790906400},{"r":"TK_02102026_43009.xls","s":2158,"t":1790910000},{"r":"TK_02102026_43010.xls","s":5962,"t":1790913600},{"r":"TK_02102026_43011.xls","s":4379,"t":1790917200},{"r":"TK_02102026_43012.xls","s":5489,"t":1790920800},{"r":"TK_02102026_43013.xls","s":3749,"t":1790924400},{"r":"TK_02102026_43014.xls","s":2790,"t":1790928000},{"r":"TK_02102026_43015.xls","s":6972,"t":1790931600},{"r":"TK_02102026_43016.xls","s":4495,"t":1790906400},{"r":"TK_02102026_43017.xls","s":5614,"t":1790910000},{"r":"TK_02102026_43018.xls","s":3738,"t":1790913600},{"r":"TK_02102026_43019.xls","s":2837,"t":1790917200},{"r":"TK_02102026_43020.xls","s":3658,"t":1790920800},{"r":"TK_03102026_44001.xls","s":1538,"t":1790996400},{"r":"TK_03102026_44002.xls","s":7298,"t":1791000000},{"r":"TK_03102026_44003.xls","s":6454,"t":1791003600},{"r":"TK_03102026_44004.xls","s":6163,"t":1791007200},{"r":"TK_05102026_45001.xls","s":5566,"t":1791169200},{"r":"TK_05102026_45002.xls","s":1258,"t":1791172800},{"r":"TK_05102026_45003.xls","s":6946,"t":1791176400},{"r":"TK_05102026_45004.xls","s":4596,"t":1791180000},{"r":"TK_05102026_45005.xls","s":4954,"t":1791183600},{"r":"TK_05102026_45006.xls","s":6537,"t":1791187200},{"r":"TK_05102026_45007.xls","s":1965,"t":1791190800},{"r":"TK_05102026_45008.xls","s":4087,"t":1791165600},{"r":"TK_05102026_45009.xls","s":4242,"t":1791169200},{"r":"TK_05102026_45010.xls","s":4667,"t":1791172800},{"r":"TK_05102026_45011.xls","s":6608,"t":1791176400},{"r":"TK_05102026_45012.xls","s":2544,"t":1791180000},{"r":"TK_05102026_45013.xls","s":1515,"t":1791183600},{"r":"TK_05102026_45014.xls","s":1768,"t":1791187200},{"r":"TK_05102026_45015.xls","s":6338,"t":1791190800},{"r":"TK_05102026_45016.xls","s":2203,"t":1791165600}]},{"k":"del","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ12 示範工程12（结算：640,000,000VND）\\首款 30%\\1. 设计图.pdf","s":29557,"t":1778522400},{"k":"fdel","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 08\\旧报关","n":25,"b":285789,"f":[{"r":"old-001.pdf","s":7338,"t":1783706400},{"r":"old-002.pdf","s":6393,"t":1783706400},{"r":"old-003.pdf","s":12274,"t":1783706400},{"r":"old-004.pdf","s":5702,"t":1783706400},{"r":"old-005.pdf","s":9420,"t":1783706400},{"r":"old-006.pdf","s":21664,"t":1783706400},{"r":"old-007.pdf","s":11879,"t":1783706400},{"r":"old-008.pdf","s":5710,"t":1783706400},{"r":"old-009.pdf","s":5501,"t":1783706400},{"r":"old-010.pdf","s":13380,"t":1783706400},{"r":"old-011.pdf","s":10204,"t":1783706400},{"r":"old-012.pdf","s":15990,"t":1783706400},{"r":"old-013.pdf","s":17258,"t":1783706400},{"r":"old-014.pdf","s":8082,"t":1783706400},{"r":"old-015.pdf","s":18133,"t":1783706400},{"r":"old-016.pdf","s":19215,"t":1783706400},{"r":"old-017.pdf","s":20740,"t":1783706400},{"r":"old-018.pdf","s":11197,"t":1783706400},{"r":"old-019.pdf","s":9578,"t":1783706400},{"r":"old-020.pdf","s":14638,"t":1783706400},{"r":"old-021.pdf","s":7194,"t":1783706400},{"r":"old-022.pdf","s":12553,"t":1783706400},{"r":"old-023.pdf","s":8648,"t":1783706400},{"r":"old-024.pdf","s":4026,"t":1783706400},{"r":"old-025.pdf","s":9072,"t":1783706400}]},{"k":"size","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\回覆报告-01.xlsx","s0":1312,"s1":3360,"t0":1775066400,"t1":1791172800},{"k":"size","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\检查报告-01.xlsx","s0":1502,"s1":7646,"t0":1775066400,"t1":1791169200},{"k":"time","d":6,"p":"设备安检 - Safe dep\\乙廠\\2026\\回覆报告-02.xlsx","s":2246,"t0":1776794400,"t1":1790906400},{"k":"time","d":6,"p":"设备安检 - Safe dep\\乙廠\\2026\\检查报告-02.xlsx","s":1023,"t0":1776794400,"t1":1790906400}],"short":"近一週","phrase":"09/30 到 10/05 這 6 天","span":"09/30 01:00 → 10/06 01:00","before":{"id":"DEMO_2026-09-30","snap":"DEMO_2026-09-30","at":1790704800,"files":424,"bytes":13380341},"after":{"id":"DEMO_2026-10-06","snap":"DEMO_2026-10-06","at":1791223200,"files":489,"bytes":14211392},"deptStat":[[193,197],[30,36],[21,23],[15,15],[10,11],[15,15],[17,17],[123,175]],"deptFiles":[193,30,21,15,10,15,17,123],"base":null,"days":["day:DEMO_2026-10-01","day:DEMO_2026-10-02","day:DEMO_2026-10-03","day:DEMO_2026-10-04","day:DEMO_2026-10-05","day:DEMO_2026-10-06"]},{"id":"all","kind":"span","ignored":0,"unreadable":0,"unreadableFolders":[],"ev":[{"k":"fren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ13 示範工程13（结算：239,000,000VND）\\保固款 5%","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ13 示範工程13（结算：239,000,000VND）\\TTBH 5%","mv":false,"n":4,"b":102123,"f":[{"r":"1. 方案签呈.pdf","s":14653,"t":1780682400},{"r":"2. 竣工图.pdf","s":42740,"t":1775584800},{"r":"3. 记事表.xlsx","s":26315,"t":1783274400},{"r":"4. 设计图.pdf","s":18415,"t":1774720800}]},{"k":"fren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ22 示範工程22（结算：807,000,000VND）\\付款\\首款 30%","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ22 示範工程22（结算：807,000,000VND）\\首款 30%","mv":true,"n":3,"b":154193,"f":[{"r":"1. 设计图.pdf","s":74259,"t":1775584800},{"r":"2. 结算表.xlsx","s":73362,"t":1783879200},{"r":"3. 保固书.pdf","s":6572,"t":1776448800}]},{"k":"mov","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\第1期\\1. 设计图.pdf","p0":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\1. 设计图.pdf","s":27149,"t":1778608800,"nm":false,"sure":true},{"k":"mov","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\第1期\\2. 结算表.xlsx","p0":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ22 示範工程22（结算：973,000,000VND）\\进度款 25%\\2. 结算表.xlsx","s":44095,"t":1781028000,"nm":false,"sure":true},{"k":"ren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ21 示範工程21（结算：432,000,000VND）\\首款 30%\\1. 预算表（定稿）.xlsx","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ21 示範工程21（结算：432,000,000VND）\\首款 30%\\1. 预算表.xlsx","s":13295,"t":1780336800},{"k":"ren","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ23 示範工程23（结算：222,000,000VND）\\验收款 40%\\1. 方案签呈-簽核版.pdf","p0":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\2. 未结案工程\\ATJ23 示範工程23（结算：222,000,000VND）\\验收款 40%\\1. 方案签呈.pdf","s":15687,"t":1782324000},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-01_rev1.dwg","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-01.dwg","s":71961,"t":1780941600},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-02_rev1.dwg","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-02.dwg","s":180318,"t":1781028000},{"k":"ren","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-03_rev1.pdf","p0":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve PCCC\\PCCC-03.pdf","s":83908,"t":1773856800},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849001_02092026\\DEMO_TLXNK_02092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 01.xlsx","s":1298,"t":1786384800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849002_03092026\\DEMO_TLXNK_03092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 02.xlsx","s":1435,"t":1786471200,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849003_04092026\\DEMO_TLXNK_04092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 03.xlsx","s":1222,"t":1786557600,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849004_05092026\\DEMO_TLXNK_05092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 04.xlsx","s":626,"t":1786644000,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849005_06092026\\DEMO_TLXNK_06092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 05.xlsx","s":1185,"t":1786730400,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849006_07092026\\DEMO_TLXNK_07092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 06.xlsx","s":1219,"t":1786816800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849007_08092026\\DEMO_TLXNK_08092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 07.xlsx","s":686,"t":1786903200,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849008_09092026\\DEMO_TLXNK_09092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 08.xlsx","s":1097,"t":1786989600,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849009_01092026\\DEMO_TLXNK_01092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 09.xlsx","s":1166,"t":1787076000,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849010_02092026\\DEMO_TLXNK_02092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 10.xlsx","s":1101,"t":1787162400,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849011_03092026\\DEMO_TLXNK_03092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 11.xlsx","s":609,"t":1787248800,"nm":true,"sure":false},{"k":"mov","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\DEMO_I_C_10849012_04092026\\DEMO_TLXNK_04092026.xlsx","p0":"關務 - IPXP dep\\甲廠 FACTORY-A\\进口-import\\2026\\THANG 09\\Chỉ định 12.xlsx","s":1396,"t":1787335200,"nm":true,"sure":false},{"k":"add","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\1. 已结案工程\\BTJ12 示範工程12（结算：736,000,000VND）\\验收款 40%\\9. 竣工图.pdf","s":54047,"t":1790650800},{"k":"add","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\1. 已结案工程\\BTJ13 示範工程13（结算：273,000,000VND）\\首款 30%\\9. 补充协议.pdf","s":5065,"t":1790654400},{"k":"fadd","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ24 示範工程24（新）","n":5,"b":192257,"f":[{"r":"首款 30%\\1. 合同.pdf","s":35259,"t":1790910000},{"r":"首款 30%\\2. 预算表.xlsx","s":74648,"t":1790913600},{"r":"首款 30%\\3. 设计图.pdf","s":48112,"t":1790917200},{"r":"首款 30%\\4. 方案签呈.pdf","s":6931,"t":1790920800},{"r":"首款 30%\\5. 施工进度表.xlsx","s":27307,"t":1790924400}]},{"k":"fadd","d":1,"p":"建机室技术组 - BD dep\\DEMO-PLANT\\HỒ SƠ CẤP PHÉP NĂM 2025\\Ban ve hoan cong","n":6,"b":564873,"f":[{"r":"HC-01.pdf","s":66600,"t":1790740800},{"r":"HC-02.pdf","s":99923,"t":1790744400},{"r":"HC-03.pdf","s":90048,"t":1790748000},{"r":"HC-04.pdf","s":149543,"t":1790751600},{"r":"HC-05.pdf","s":76303,"t":1790755200},{"r":"HC-06.pdf","s":82456,"t":1790758800}]},{"k":"add","d":2,"p":"建机成本组 - Price dep\\乙廠_TV 2523-01 示範工程 示範廠商_2026.10.02.pdf","s":11453,"t":1790928000},{"k":"add","d":2,"p":"建机成本组 - Price dep\\甲廠_TV 2521-03 示範工程 示範廠商_2026.09.29.pdf","s":22231,"t":1790665200},{"k":"add","d":2,"p":"建机成本组 - Price dep\\甲廠_TV 2522-07 示範工程 示範廠商_2026.10.02.pdf","s":19756,"t":1790924400},{"k":"add","d":4,"p":"行政二 - AD2 dep\\投資證書\\ĐKKD lần 19_01102026.pdf","s":14354,"t":1790827200},{"k":"add","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\检查报告-05.xlsx","s":1642,"t":1790672400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40001.xls","s":3556,"t":1790650800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40002.xls","s":3861,"t":1790654400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40003.xls","s":4096,"t":1790658000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40004.xls","s":5209,"t":1790661600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40005.xls","s":3945,"t":1790665200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40006.xls","s":4349,"t":1790668800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40007.xls","s":3353,"t":1790672400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40008.xls","s":3004,"t":1790647200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40009.xls","s":964,"t":1790650800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40010.xls","s":883,"t":1790654400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40011.xls","s":5234,"t":1790658000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40012.xls","s":3907,"t":1790661600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40013.xls","s":2669,"t":1790665200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40014.xls","s":3220,"t":1790668800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40015.xls","s":6437,"t":1790672400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40016.xls","s":4342,"t":1790647200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40017.xls","s":2780,"t":1790650800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_29092026_40018.xls","s":887,"t":1790654400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41001.xls","s":3396,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41002.xls","s":6397,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41003.xls","s":2699,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41004.xls","s":2626,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41005.xls","s":4007,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41006.xls","s":806,"t":1790755200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41007.xls","s":6088,"t":1790758800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41008.xls","s":7042,"t":1790733600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41009.xls","s":3157,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41010.xls","s":5287,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41011.xls","s":6843,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41012.xls","s":4067,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41013.xls","s":2959,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41014.xls","s":2031,"t":1790755200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41015.xls","s":6537,"t":1790758800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41016.xls","s":3706,"t":1790733600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41017.xls","s":6006,"t":1790737200},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41018.xls","s":5567,"t":1790740800},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41019.xls","s":6105,"t":1790744400},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41020.xls","s":2132,"t":1790748000},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41021.xls","s":5434,"t":1790751600},{"k":"add","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 09\\TK_30092026_41022.xls","s":5307,"t":1790755200},{"k":"fadd","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 10","n":55,"b":237313,"f":[{"r":"TK_01102026_42001.xls","s":6036,"t":1790823600},{"r":"TK_01102026_42002.xls","s":6255,"t":1790827200},{"r":"TK_01102026_42003.xls","s":4156,"t":1790830800},{"r":"TK_01102026_42004.xls","s":1992,"t":1790834400},{"r":"TK_01102026_42005.xls","s":2110,"t":1790838000},{"r":"TK_01102026_42006.xls","s":5392,"t":1790841600},{"r":"TK_01102026_42007.xls","s":4458,"t":1790845200},{"r":"TK_01102026_42008.xls","s":5279,"t":1790820000},{"r":"TK_01102026_42009.xls","s":1463,"t":1790823600},{"r":"TK_01102026_42010.xls","s":5696,"t":1790827200},{"r":"TK_01102026_42011.xls","s":7437,"t":1790830800},{"r":"TK_01102026_42012.xls","s":7091,"t":1790834400},{"r":"TK_01102026_42013.xls","s":3678,"t":1790838000},{"r":"TK_01102026_42014.xls","s":2075,"t":1790841600},{"r":"TK_01102026_42015.xls","s":2813,"t":1790845200},{"r":"TK_02102026_43001.xls","s":2775,"t":1790910000},{"r":"TK_02102026_43002.xls","s":4154,"t":1790913600},{"r":"TK_02102026_43003.xls","s":6160,"t":1790917200},{"r":"TK_02102026_43004.xls","s":3992,"t":1790920800},{"r":"TK_02102026_43005.xls","s":6053,"t":1790924400},{"r":"TK_02102026_43006.xls","s":1186,"t":1790928000},{"r":"TK_02102026_43007.xls","s":2758,"t":1790931600},{"r":"TK_02102026_43008.xls","s":5216,"t":1790906400},{"r":"TK_02102026_43009.xls","s":2158,"t":1790910000},{"r":"TK_02102026_43010.xls","s":5962,"t":1790913600},{"r":"TK_02102026_43011.xls","s":4379,"t":1790917200},{"r":"TK_02102026_43012.xls","s":5489,"t":1790920800},{"r":"TK_02102026_43013.xls","s":3749,"t":1790924400},{"r":"TK_02102026_43014.xls","s":2790,"t":1790928000},{"r":"TK_02102026_43015.xls","s":6972,"t":1790931600},{"r":"TK_02102026_43016.xls","s":4495,"t":1790906400},{"r":"TK_02102026_43017.xls","s":5614,"t":1790910000},{"r":"TK_02102026_43018.xls","s":3738,"t":1790913600},{"r":"TK_02102026_43019.xls","s":2837,"t":1790917200},{"r":"TK_02102026_43020.xls","s":3658,"t":1790920800},{"r":"TK_03102026_44001.xls","s":1538,"t":1790996400},{"r":"TK_03102026_44002.xls","s":7298,"t":1791000000},{"r":"TK_03102026_44003.xls","s":6454,"t":1791003600},{"r":"TK_03102026_44004.xls","s":6163,"t":1791007200},{"r":"TK_05102026_45001.xls","s":5566,"t":1791169200},{"r":"TK_05102026_45002.xls","s":1258,"t":1791172800},{"r":"TK_05102026_45003.xls","s":6946,"t":1791176400},{"r":"TK_05102026_45004.xls","s":4596,"t":1791180000},{"r":"TK_05102026_45005.xls","s":4954,"t":1791183600},{"r":"TK_05102026_45006.xls","s":6537,"t":1791187200},{"r":"TK_05102026_45007.xls","s":1965,"t":1791190800},{"r":"TK_05102026_45008.xls","s":4087,"t":1791165600},{"r":"TK_05102026_45009.xls","s":4242,"t":1791169200},{"r":"TK_05102026_45010.xls","s":4667,"t":1791172800},{"r":"TK_05102026_45011.xls","s":6608,"t":1791176400},{"r":"TK_05102026_45012.xls","s":2544,"t":1791180000},{"r":"TK_05102026_45013.xls","s":1515,"t":1791183600},{"r":"TK_05102026_45014.xls","s":1768,"t":1791187200},{"r":"TK_05102026_45015.xls","s":6338,"t":1791190800},{"r":"TK_05102026_45016.xls","s":2203,"t":1791165600}]},{"k":"del","d":0,"p":"工程内业课 - RC dep\\1. 甲廠 FACTORY-A\\1. 已结案工程\\ATJ12 示範工程12（结算：640,000,000VND）\\首款 30%\\1. 设计图.pdf","s":29557,"t":1778522400},{"k":"fdel","d":7,"p":"關務 - IPXP dep\\甲廠 FACTORY-A\\出口 - Export\\2026\\THANG 08\\旧报关","n":25,"b":285789,"f":[{"r":"old-001.pdf","s":7338,"t":1783706400},{"r":"old-002.pdf","s":6393,"t":1783706400},{"r":"old-003.pdf","s":12274,"t":1783706400},{"r":"old-004.pdf","s":5702,"t":1783706400},{"r":"old-005.pdf","s":9420,"t":1783706400},{"r":"old-006.pdf","s":21664,"t":1783706400},{"r":"old-007.pdf","s":11879,"t":1783706400},{"r":"old-008.pdf","s":5710,"t":1783706400},{"r":"old-009.pdf","s":5501,"t":1783706400},{"r":"old-010.pdf","s":13380,"t":1783706400},{"r":"old-011.pdf","s":10204,"t":1783706400},{"r":"old-012.pdf","s":15990,"t":1783706400},{"r":"old-013.pdf","s":17258,"t":1783706400},{"r":"old-014.pdf","s":8082,"t":1783706400},{"r":"old-015.pdf","s":18133,"t":1783706400},{"r":"old-016.pdf","s":19215,"t":1783706400},{"r":"old-017.pdf","s":20740,"t":1783706400},{"r":"old-018.pdf","s":11197,"t":1783706400},{"r":"old-019.pdf","s":9578,"t":1783706400},{"r":"old-020.pdf","s":14638,"t":1783706400},{"r":"old-021.pdf","s":7194,"t":1783706400},{"r":"old-022.pdf","s":12553,"t":1783706400},{"r":"old-023.pdf","s":8648,"t":1783706400},{"r":"old-024.pdf","s":4026,"t":1783706400},{"r":"old-025.pdf","s":9072,"t":1783706400}]},{"k":"size","d":0,"p":"工程内业课 - RC dep\\2. 乙廠 FACTORY-B\\2. 未结案工程\\BTJ21 示範工程21（结算：175,000,000VND）\\内部资料\\1. 预算表.xlsx","s0":4714,"s1":8810,"t0":1782151200,"t1":1790668800},{"k":"size","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\回覆报告-01.xlsx","s0":1312,"s1":3360,"t0":1775066400,"t1":1791172800},{"k":"size","d":6,"p":"设备安检 - Safe dep\\甲廠\\2026\\检查报告-01.xlsx","s0":1502,"s1":7646,"t0":1775066400,"t1":1791169200},{"k":"time","d":6,"p":"设备安检 - Safe dep\\乙廠\\2026\\回覆报告-02.xlsx","s":2246,"t0":1776794400,"t1":1790906400},{"k":"time","d":6,"p":"设备安检 - Safe dep\\乙廠\\2026\\检查报告-02.xlsx","s":1023,"t0":1776794400,"t1":1790906400}],"short":"自 09/29","phrase":"09/29 到 10/05 這 7 天","span":"09/29 01:00 → 10/06 01:00","before":{"id":"DEMO_2026-09-29","snap":"DEMO_2026-09-29","at":1790618400,"files":402,"bytes":13230564},"after":{"id":"DEMO_2026-10-06","snap":"DEMO_2026-10-06","at":1791223200,"files":489,"bytes":14211392},"deptStat":[[191,197],[30,36],[20,23],[15,15],[10,11],[15,15],[16,17],[105,175]],"deptFiles":[191,30,20,15,10,15,16,105],"base":null,"days":["day:DEMO_2026-09-30","day:DEMO_2026-10-01","day:DEMO_2026-10-02","day:DEMO_2026-10-03","day:DEMO_2026-10-04","day:DEMO_2026-10-05","day:DEMO_2026-10-06"]}],"days":[{"id":"day:DEMO_2026-09-30","range":"day:DEMO_2026-09-30","label":"09/29 週二","md":"09/29","wk":"二","c":{"total":23,"del":0}},{"id":"day:DEMO_2026-10-01","range":"day:DEMO_2026-10-01","label":"09/30 週三","md":"09/30","wk":"三","c":{"total":33,"del":0}},{"id":"day:DEMO_2026-10-02","range":"day:DEMO_2026-10-02","label":"10/01 週四","md":"10/01","wk":"四","c":{"total":30,"del":0}},{"id":"day:DEMO_2026-10-03","range":"day:DEMO_2026-10-03","label":"10/02 週五","md":"10/02","wk":"五","c":{"total":27,"del":0}},{"id":"day:DEMO_2026-10-04","range":"day:DEMO_2026-10-04","label":"10/03 週六","md":"10/03","wk":"六","c":{"total":5,"del":0}},{"id":"day:DEMO_2026-10-05","range":"day:DEMO_2026-10-05","label":"10/04 週日","md":"10/04","wk":"日","c":{"total":0,"del":0}},{"id":"day:DEMO_2026-10-06","range":"day:DEMO_2026-10-06","label":"10/05 週一","md":"10/05","wk":"一","c":{"total":50,"del":26}}],"presets":["day:DEMO_2026-10-06","week","all"]};
+/* ---------- core: data model, judgement and formatting shared by every layout ---------- */
+/* expects a global DATA (see zdata.mjs). Nothing here touches the page layout. */
+const NF = new Intl.NumberFormat('zh-TW');
+const fmtNum = n => NF.format(n);
+function fmtBytes(b) {
+  const a = Math.abs(b);
+  if (a < 1024) return a + ' B';
+  const u = ['KB', 'MB', 'GB', 'TB']; let v = a / 1024, i = 0;
+  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+  return (v >= 100 ? Math.round(v) : v.toFixed(1).replace(/\.0$/, '')) + ' ' + u[i];
+}
+const fmtDelta = d => (d > 0 ? '+' : d < 0 ? '\u2212' : '') + fmtBytes(d);
+const fmtSigned = n => (n > 0 ? '+' : n < 0 ? '\u2212' : '') + fmtNum(Math.abs(n));
+const TZ = 'Asia/Ho_Chi_Minh';
+const _dtf = new Intl.DateTimeFormat('zh-TW', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+const WK = '日一二三四五六';
+function _parts(sec) { const o = {}; for (const p of _dtf.formatToParts(new Date(sec * 1000))) o[p.type] = p.value; if (o.hour === '24') o.hour = '00'; return o; }
+function fmtTime(sec) { const p = _parts(sec); return `${p.year}/${p.month}/${p.day} ${p.hour}:${p.minute}`; }
+function fmtMD(sec) { const p = _parts(sec); return `${p.month}/${p.day}`; }
+function fmtHM(sec) { const p = _parts(sec); return `${p.hour}:${p.minute}`; }
+function weekday(sec) { const p = _parts(sec); return WK[new Date(Date.UTC(+p.year, +p.month - 1, +p.day)).getUTCDay()]; }
+function fmtLongDate(sec) { const p = _parts(sec); return `${+p.year} 年 ${+p.month} 月 ${+p.day} 日　星期${weekday(sec)}`; }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const segs = p => p.split('\\');
+const baseOf = p => p.slice(p.lastIndexOf('\\') + 1);
+const dirOf = p => { const k = p.lastIndexOf('\\'); return k < 0 ? '' : p.slice(0, k); };
+function shortPath(p, keepTail = 2) { const s = segs(p); if (s.length <= keepTail + 2) return s.join(' / '); return [s[0], '…', ...s.slice(-keepTail)].join(' / '); }
+function inDept(p) { const s = segs(p); return s.length > 1 ? s.slice(1).join('\\') : p; }
+const where = p => shortPath(inDept(p), 2) || '（部門最上層）';
+const deptName = d => (DATA.depts[d] ? DATA.depts[d].name : 'Z:\\');
+
+const ICON = {
+  x: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>',
+  arr: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M7 3l3 3-3 3"/></svg>',
+  down: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v8M3 7l3 3 3-3"/></svg>',
+  back: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3L4.5 7l4 4"/></svg>',
+  chev: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>',
+  copy: '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4.5" y="4.5" width="7.5" height="7.5" rx="1.6"/><path d="M9.5 2.5H3.6A1.1 1.1 0 0 0 2.5 3.6v5.9"/></svg>',
+  ok: '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5l2.6 2.5L11 4.5"/></svg>',
+  min: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 8.5h7"/></svg>',
+  tile: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="4.5" height="9" rx="1"/><rect x="8" y="2.5" width="4.5" height="9" rx="1"/></svg>',
+};
+
+const TYPE = {
+  add: { g: 'add', label: '新增' }, fadd: { g: 'add', label: '新增資料夾' },
+  del: { g: 'del', label: '刪除' }, fdel: { g: 'del', label: '刪除資料夾' },
+  ren: { g: 'ren', label: '改名' }, mov: { g: 'ren', label: '搬移' }, fren: { g: 'ren', label: '資料夾改名' },
+  size: { g: 'size', label: '大小變了' }, time: { g: 'time', label: '只改了修改時間' },
+};
+const GROUPS = [
+  { g: 'del', label: '刪除' }, { g: 'ren', label: '改名或搬移' }, { g: 'size', label: '大小變了' },
+  { g: 'add', label: '新增' }, { g: 'time', label: '只改了修改時間' },
+];
+const GL = Object.fromEntries(GROUPS.map(x => [x.g, x.label]));
+const typeLabel = e => e.k === 'mov' ? (e.nm ? '搬移並改名' : '搬移') : e.k === 'fren' && e.mv ? '資料夾搬移' : e.k === 'size' ? (e.s1 > e.s0 ? '變大' : '變小') : TYPE[e.k].label;
+const cnt = e => e.n || 1;
+const gOf = e => TYPE[e.k].g;
+
+const rangeById = id => DATA.ranges.find(r => r.id === id);
+// the range to open with: ?r=<range id> when the page that switches layouts hands one over, else the newest day
+function startRange() {
+  let id = null;
+  try { id = new URLSearchParams(location.search).get('r'); } catch (e) { /* no query */ }
+  return id && rangeById(id) ? id : DATA.presets[0];
+}
+// tell that page which range is showing, so the next layout opens on the same one
+function tellRange(R) {
+  try { if (window.parent !== window) window.parent.postMessage({ zmon: 'range', id: R.id }, '*'); } catch (e) { /* standalone */ }
+}
+const _sum = new Map();
+function summary(R) {
+  if (_sum.has(R.id)) return _sum.get(R.id);
+  const by = { add: 0, del: 0, ren: 0, size: 0, time: 0 };
+  const dept = DATA.depts.map(() => ({ add: 0, del: 0, ren: 0, size: 0, time: 0, total: 0 }));
+  R.ev.forEach((e, i) => { e.i = i; const g = gOf(e), c = cnt(e); by[g] += c; if (e.d >= 0) { dept[e.d][g] += c; if (g !== 'time') dept[e.d].total += c; } });
+  const total = by.add + by.del + by.ren + by.size;
+  const out = { by, dept, total, judge: judge(R, by, dept, total) };
+  _sum.set(R.id, out); return out;
+}
+function judge(R, by, dept, total) {
+  const reasons = [];
+  const extHit = new Map();
+  for (const e of R.ev) if ((e.k === 'ren' || e.k === 'mov') && e.p0) {
+    const a = baseOf(e.p0), b = baseOf(e.p);
+    const xa = a.includes('.') ? a.split('.').pop().toLowerCase() : '', xb = b.includes('.') ? b.split('.').pop().toLowerCase() : '';
+    if (xa !== xb) extHit.set(xb, (extHit.get(xb) || 0) + 1);
+  }
+  for (const [x, n] of extHit) if (n >= 50) reasons.push({ lv: 'bad', say: `${fmtNum(n)} 個檔被改成同一種副檔名「.${x}」，像勒索病毒在加密檔案` });
+  dept.forEach((d, i) => { const files = R.deptFiles ? R.deptFiles[i] : 0; if (files && d.del >= 200 && d.del >= files * 0.05) reasons.push({ lv: 'bad', say: `${deptName(i)}刪除了 ${fmtNum(d.del)} 個檔，是那個部門的 ${Math.round(d.del / files * 100)}%` }); });
+  const fdel = R.ev.filter(e => e.k === 'fdel');
+  if (by.del >= 50) reasons.push({ lv: 'warn', say: `刪除了 ${fmtNum(by.del)} 個檔${fdel.length ? `，其中 ${fmtNum(fdel.length)} 個資料夾整個不見了` : ''}` });
+  else if (fdel.length) reasons.push({ lv: 'warn', say: fdel.length === 1 ? `${deptName(fdel[0].d)}有一整個資料夾不見了（${fmtNum(fdel[0].n)} 個檔）` : `有 ${fmtNum(fdel.length)} 個資料夾整個不見了` });
+  if (R.base && total >= 200 && total >= R.base * 5) reasons.push({ lv: 'warn', say: `變化量是平常的 ${Math.round(total / R.base)} 倍` });
+  const uf = R.unreadableFolders || [];
+  if (uf.length) reasons.push({ lv: 'warn', unread: true, say: `有 ${fmtNum(uf.length)} 個資料夾這次讀不到，裡面 ${fmtNum(R.unreadable || 0)} 個檔先不算刪除也不算新增` });
+  reasons.sort((a, b) => (a.lv === 'bad' ? 0 : a.unread ? 1 : 2) - (b.lv === 'bad' ? 0 : b.unread ? 1 : 2));
+  const lv = reasons.some(r => r.lv === 'bad') ? 'bad' : reasons.length ? 'warn' : 'ok';
+  return { lv, reasons };
+}
+const LV_TEXT = { ok: '正常', warn: '需要關注', bad: '嚴重' };
+// the one sentence at the top of every layout
+function headline(R) {
+  const M = summary(R), J = M.judge;
+  let head;
+  if (M.total === 0) head = `${R.phrase}，Z:\\ 沒有檔案新增、刪除、改名或改大小。`;
+  else if (J.lv === 'ok') head = `${R.phrase}，共 ${fmtNum(M.total)} 個檔有變化，${M.by.del ? `其中刪除 ${fmtNum(M.by.del)} 個，沒有整個資料夾被刪掉` : '沒有刪除'}。`;
+  else head = `${R.phrase}，${J.reasons[0].say}。`;
+  return { lv: J.lv, lvText: LV_TEXT[J.lv], head, more: J.reasons.slice(1).map(r => r.say) };
+}
+
+// many file-level changes of one kind in one existing folder collapse into a batch
+const BATCH_MIN = 4;
+const batchKey = e => gOf(e) + '|' + e.d + '|' + dirOf(e.p);
+function rangeBatches(R) {
+  if (R._batches) return R._batches;
+  summary(R);
+  const m = new Map(), out = new Map();
+  for (const e of R.ev) { if (e.n) continue; const k = batchKey(e); (m.get(k) || m.set(k, []).get(k)).push(e); }
+  for (const [key, items] of m) if (items.length >= BATCH_MIN) {
+    const g = gOf(items[0]);
+    out.set(key, { key, g, d: items[0].d, p: dirOf(items[0].p), n: items.length, items,
+      b: items.reduce((a, e) => a + (g === 'size' ? e.s1 - e.s0 : e.s || 0), 0) });
+  }
+  return (R._batches = out);
+}
+// rows to show for a set of events: folder events and batches first (bigger first), then single files by path
+function displayItems(R, items, batching = true) {
+  const B = batching ? rangeBatches(R) : new Map(), seen = new Set(), out = [];
+  for (const e of items) {
+    const b = e.n ? null : B.get(batchKey(e));
+    if (b) { if (!seen.has(b.key)) { seen.add(b.key); out.push({ b, n: b.n, p: b.p }); } continue; }
+    out.push({ e, n: e.n || 1, p: e.p });
+  }
+  return out.sort((x, y) => y.n - x.n || (x.p < y.p ? -1 : x.p > y.p ? 1 : 0));
+}
+const BATCH_VERB = { add: '新增', del: '刪除', ren: '改名或搬進來', size: '大小變了', time: '只改了修改時間' };
+// up to n things worth looking at first: whole folders gone, files deleted, folders renamed, new folders
+function notable(R, n = 3) {
+  const out = [], B = rangeBatches(R);
+  for (const e of R.ev) {
+    if (e.k === 'fdel') out.push({ e, s: 1e8 + e.n });
+    else if (e.k === 'fren') out.push({ e, s: 3e7 + e.n });
+    else if (e.k === 'fadd') out.push({ e, s: 1e7 + e.n });
+    else if (e.k === 'del' && !B.has(batchKey(e))) out.push({ e, s: 5e7 + Math.min(e.s / 1e3, 1e6) });
+    else if (e.k === 'mov') out.push({ e, s: 1e6 });
+  }
+  for (const b of B.values()) if (b.g === 'del') out.push({ b, s: 6e7 + b.n });
+  return out.sort((x, y) => y.s - x.s).slice(0, n);
+}
+// departments with changes (deletions first, then by volume) and the quiet ones
+function deptOrder(R) {
+  const M = summary(R);
+  const idx = DATA.depts.map((d, i) => i);
+  return {
+    busy: idx.filter(i => M.dept[i].total > 0).sort((x, y) => (M.dept[y].del > 0) - (M.dept[x].del > 0) || M.dept[y].total - M.dept[x].total),
+    quiet: idx.filter(i => M.dept[i].total === 0),
+  };
+}
+const eventsOf = (R, f = {}) => { summary(R); return R.ev.filter(e => (f.d == null || e.d === f.d) && (f.g == null || gOf(e) === f.g)); };
+const filesOf = list => list.reduce((a, e) => a + cnt(e), 0);
+
+// what a row says about itself: title (with old → new), where, size note
+function rowText(e) {
+  const g = gOf(e);
+  const name = e.k === 'fren' || e.k === 'ren' || (e.k === 'mov' && e.nm)
+    ? (baseOf(e.p0) === baseOf(e.p) ? { now: baseOf(e.p) } : { old: baseOf(e.p0), now: baseOf(e.p) })
+    : { now: baseOf(e.p) };
+  let place = where(dirOf(e.p));
+  if (e.k === 'mov' || (e.k === 'fren' && e.mv)) place = `從 ${where(dirOf(e.p0))} 到 ${where(dirOf(e.p))}`;
+  const meta = e.n ? `${fmtNum(e.n)} 個檔 · ${fmtBytes(e.b)}` : e.k === 'size' ? fmtDelta(e.s1 - e.s0) : e.k === 'time' ? fmtTime(e.t1) : fmtBytes(e.s);
+  return { g, label: typeLabel(e), name, place, meta, folder: !!e.n };
+}
+function batchText(b) {
+  return { g: b.g, label: `${BATCH_VERB[b.g]} ${fmtNum(b.n)} 個檔`, name: { now: baseOf(b.p) || '（部門最上層）' }, place: where(dirOf(b.p)),
+    meta: b.g === 'size' ? fmtDelta(b.b) : b.g === 'time' ? '' : fmtBytes(b.b), folder: true };
+}
+
+// before | after for one change (or one file inside a folder change)
+function snapPath(rel, point) { return (DATA.snapRoot || `${DATA.drive}\\@Recently-Snapshot\\{snap}`).replace('{snap}', point.snap) + '\\' + rel; }
+function detailModel(e, child, R) {
+  const A = R.before, B = R.after;
+  let f = e, p0 = e.p0 || e.p, p1 = e.p;
+  if (child) { f = child; p0 = (e.p0 || e.p) + '\\' + child.r; p1 = e.p + '\\' + child.r; }
+  const isFolder = !child && !!e.n;
+  const kind = child ? (e.k === 'fadd' ? '新增' : e.k === 'fdel' ? '刪除' : e.mv ? '跟著資料夾搬移' : '跟著資料夾改名') : typeLabel(e);
+  const had = !(e.k === 'add' || e.k === 'fadd'), has = !(e.k === 'del' || e.k === 'fdel');
+  const sA = child ? f.s : e.k === 'size' ? e.s0 : isFolder ? e.b : e.s;
+  const sB = child ? f.s : e.k === 'size' ? e.s1 : isFolder ? e.b : e.s;
+  const tA = child ? f.t : (e.t0 ?? e.t), tB = child ? f.t : (e.t1 ?? e.t);
+  return { e, g: gOf(e), kind, isFolder, had, has, p0, p1, nameA: baseOf(p0), nameB: baseOf(p1), dirA: dirOf(p0), dirB: dirOf(p1),
+    sA, sB, tA, tB, n: e.n, files: isFolder ? (e.f || []) : null, dept: deptName(e.d), A, B,
+    nowPath: `${DATA.drive}\\${p1}`, oldPath: snapPath(p0, A) };
+}
+function nameMarks(a, b) {
+  if (a === b) return [esc(a), esc(b)];
+  let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  let j = 0; while (j < a.length - i && j < b.length - i && a[a.length - 1 - j] === b[b.length - 1 - j]) j++;
+  const m = s => esc(s.slice(0, i)) + (s.length - j > i ? `<mark>${esc(s.slice(i, s.length - j))}</mark>` : '') + esc(s.slice(s.length - j));
+  return [m(a), m(b)];
+}
+// path as segments; segments after the first difference are marked
+function pathHtml(p, other, sep = '<i class="sep">/</i>') {
+  const a = segs(p), b = other == null ? a : segs(other);
+  let k = 0; while (k < a.length && k < b.length && a[k] === b[k]) k++;
+  return a.map((s, i) => i >= k ? `<mark>${esc(s)}</mark>` : `<span>${esc(s)}</span>`).join(sep);
+}
+function copyText(v) {
+  return (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = v; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  });
+}
+// a copy button that says 已複製 for a moment
+function wireCopy(root) {
+  root.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-copy]'); if (!t) return;
+    ev.stopPropagation();
+    copyText(t.dataset.copy).then(() => { const old = t.innerHTML; t.classList.add('done'); t.innerHTML = ICON.ok + '已複製'; setTimeout(() => { t.classList.remove('done'); t.innerHTML = old; }, 1400); });
+  });
+}
+const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// run a WAAPI animation and always finish within ms+250 even when the page is not painting
+function animate(el, frames, opts) {
+  if (reduceMotion() || !el.animate) return Promise.resolve();
+  const a = el.animate(frames, { fill: 'none', ...opts });
+  return new Promise(res => { let done = false; const fin = () => { if (!done) { done = true; res(); } }; a.onfinish = fin; a.oncancel = fin; setTimeout(fin, (opts.duration || 300) + (opts.delay || 0) + 250); });
+}
+
+const S = { R: null, wins: [], z: 100, seq: 0 };
+const $ = id => document.getElementById(id);
+const desk = $('desk');
+
+function renderMenu() {
+  const ids = [...DATA.days.slice(-4).map(d => d.range), ...DATA.presets.filter(p => !p.startsWith('day:'))];
+  if (!ids.includes(S.R.id)) ids.unshift(S.R.id);
+  $('menu').innerHTML = `<b>Z:\\ 變化</b>${ids.map(id => `<button class="mb" data-range="${esc(id)}" aria-pressed="${S.R.id === id}">${esc(rangeById(id).short)}</button>`).join('')}
+    <span class="sp"></span><span class="tool"><button class="mb" data-act="tile">${ICON.tile}並排</button><button class="mb" data-act="closeall">全部關閉</button></span>`;
+}
+function renderDesk() {
+  const R = S.R, M = summary(R), H = headline(R), O = deptOrder(R);
+  const a = R.before, b = R.after;
+  const nts = notable(R, 4);
+  const gs = GROUPS.filter(x => x.g !== 'time');
+  const max = Math.max(1, ...DATA.days.map(d => d.c.total));
+  $('wg').innerHTML = `
+  <section class="wd w-hero"><span class="sev ${H.lv}"><i></i>${H.lvText}</span><div class="hero">${esc(H.head)}</div>
+    <div class="ba num">檔案 <b>${fmtNum(a.files)}</b> → <b>${fmtNum(b.files)}</b>（${fmtSigned(b.files - a.files)}）　容量 <b>${fmtBytes(a.bytes)}</b> → <b>${fmtBytes(b.bytes)}</b>（${fmtDelta(b.bytes - a.bytes)}）　·　${esc(R.span)}</div></section>
+  <section class="wd w-types"><h3>四種變化</h3><div class="tiles">${gs.map(x => `<button class="tile c-${x.g}" data-g="${x.g}"><b class="num">${fmtNum(M.by[x.g])}</b><span>${x.label}</span></button>`).join('')}</div></section>
+  <section class="wd w-first"><h3>先看這幾件</h3>${nts.length ? nts.map(({ e, b }) => {
+    const T = b ? batchText(b) : rowText(e), nm = T.name.old ? `${T.name.old} → ${T.name.now}` : T.name.now;
+    return `<button class="fi c-${T.g}" ${b ? `data-batch="${esc(b.key)}"` : `data-ev="${e.i}"`}><em>${esc(T.label)}</em><b>${esc(nm)}</b><p>${esc(deptName(b ? b.d : e.d))} · ${esc(T.meta)}</p></button>`;
+  }).join('') : '<div class="quiet">沒有要特別看的</div>'}</section>
+  <section class="wd w-depts"><h3>部門</h3>${O.busy.map(i => {
+    const c = M.dept[i];
+    const bars = gs.filter(x => c[x.g]).map(x => `<span class="c-${x.g}" style="width:${(c[x.g] / c.total * 100).toFixed(1)}%"></span>`).join('');
+    return `<button class="dr" data-d="${i}"><b>${esc(DATA.depts[i].name)}<small>${esc(DATA.depts[i].code)}</small></b><span class="bar">${bars}</span><span class="n num">${fmtNum(c.total)}</span></button>`;
+  }).join('')}${O.quiet.length ? `<div class="quiet">沒有變化：${O.quiet.map(i => esc(DATA.depts[i].name)).join('、')}</div>` : ''}</section>
+  <section class="wd w-days"><h3>每天</h3><div class="chart">${DATA.days.map(d => {
+    const h = d.c.total ? Math.max(3, d.c.total / max * 80) : 1, hd = d.c.total ? d.c.del / d.c.total * h : 0;
+    return `<button class="cb${R.days && R.days.includes(d.id) ? ' on' : ''}" data-range="${esc(d.range)}"><i><b style="height:${(h - hd).toFixed(1)}px"></b>${hd ? `<b class="d" style="height:${hd.toFixed(1)}px"></b>` : ''}</i><span class="num">${esc(d.md)}</span></button>`;
+  }).join('')}</div></section>`;
+}
+
+// ---- windows ----
+function front(w) { S.wins.forEach(x => x.el.classList.toggle('front', x === w)); w.el.style.zIndex = ++S.z; }
+function place(w, r) { Object.assign(w.el.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' }); w.r = r; }
+function zoomFrom(el, src, dst, dur = 380) {
+  const sx = src.width / dst.w, sy = src.height / dst.h;
+  return animate(el, [{ transform: `translate(${src.left - dst.x}px,${src.top - dst.y}px) scale(${sx},${sy})`, opacity: .25, borderRadius: '14px' }, { transform: 'none', opacity: 1, borderRadius: '10px' }], { duration: dur, easing: 'cubic-bezier(.2,.9,.25,1)' });
+}
+function openWin(key, title, sub, g, fill, srcEl) {
+  const had = S.wins.find(w => w.key === key);
+  if (had) { if (had.min) restore(had); front(had); return had; }
+  const D = desk.getBoundingClientRect();
+  const kind = key.startsWith('e:') || key.includes(':f') ? 'detail' : 'list';
+  const w0 = Math.min(kind === 'detail' ? 600 : 520, D.width - 24), h0 = Math.min(D.height - 90, kind === 'detail' ? 470 : 580);
+  const k = S.wins.filter(w => !w.min).length;
+  const r = { w: w0, h: h0, x: Math.max(12, D.width - w0 - 40 - (k % 6) * 36), y: 24 + (k % 6) * 30 };
+  const el = document.createElement('section');
+  el.className = 'win c-' + (g || 'ren');
+  el.innerHTML = `<header class="wt"><i class="dot"></i><span class="tt">${esc(title)}${sub ? `<small>${esc(sub)}</small>` : ''}</span><button class="wb" data-w="min" aria-label="縮到下面">${ICON.min}</button><button class="wb" data-w="close" aria-label="關閉">${ICON.x}</button></header><div class="wc"></div>`;
+  desk.appendChild(el);
+  const w = { key, el, title, g, r, min: false, src: srcEl ? srcEl.getBoundingClientRect() : null };
+  S.wins.push(w); place(w, r); front(w);
+  fill(el.querySelector('.wc'), w);
+  const src = w.src ? { left: w.src.left - D.left, top: w.src.top - D.top, width: w.src.width, height: w.src.height } : { left: r.x + r.w / 2 - 20, top: r.y + 20, width: 40, height: 30 };
+  zoomFrom(el, src, r);
+  return w;
+}
+function closeWin(w) {
+  S.wins = S.wins.filter(x => x !== w);
+  w.el.style.pointerEvents = 'none';
+  animate(w.el, [{ transform: 'none', opacity: 1 }, { transform: 'scale(.92)', opacity: 0 }], { duration: 180, easing: 'ease-in' }).then(() => w.el.remove());
+  const top = S.wins.filter(x => !x.min).sort((a, b) => +b.el.style.zIndex - +a.el.style.zIndex)[0];
+  if (top) front(top);
+  renderDock();
+}
+function minimize(w) {
+  w.min = true; renderDock();
+  const chip = $('dock').querySelector(`[data-dock="${CSS.escape(w.key)}"]`), D = desk.getBoundingClientRect();
+  const c = chip ? chip.getBoundingClientRect() : { left: D.left + D.width / 2, top: D.bottom - 40, width: 60, height: 24 };
+  animate(w.el, [{ transform: 'none', opacity: 1 }, { transform: `translate(${c.left - D.left - w.r.x}px,${c.top - D.top - w.r.y}px) scale(${c.width / w.r.w},${c.height / w.r.h})`, opacity: .2 }], { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)' }).then(() => { if (w.min) w.el.style.display = 'none'; });
+}
+function restore(w) {
+  const chip = $('dock').querySelector(`[data-dock="${CSS.escape(w.key)}"]`), D = desk.getBoundingClientRect();
+  w.min = false; w.el.style.display = ''; front(w);
+  const c = chip ? chip.getBoundingClientRect() : null;
+  renderDock();
+  if (c) zoomFrom(w.el, { left: c.left - D.left, top: c.top - D.top, width: c.width, height: c.height }, w.r, 320);
+}
+function renderDock() {
+  $('dock').innerHTML = S.wins.filter(w => w.min).map(w => `<button class="dk c-${w.g || 'ren'}" data-dock="${esc(w.key)}"><i></i><span>${esc(w.title)}</span></button>`).join('');
+}
+// side by side: every open window gets an equal column, moving smoothly from where it was
+function tile() {
+  const open = S.wins.filter(w => !w.min).sort((a, b) => a.r.x - b.r.x || a.r.y - b.r.y);
+  if (!open.length) return;
+  const D = desk.getBoundingClientRect(), gap = 12, pad = 16;
+  const wEach = Math.max(300, Math.floor((D.width - pad * 2 - gap * (open.length - 1)) / open.length));
+  open.forEach((w, k) => {
+    const from = { ...w.r };
+    const to = { x: pad + k * (wEach + gap), y: pad, w: wEach, h: D.height - pad * 2 - 52 };
+    place(w, to);
+    animate(w.el, [{ transform: `translate(${from.x - to.x}px,${from.y - to.y}px) scale(${from.w / to.w},${from.h / to.h})` }, { transform: 'none' }], { duration: 420, delay: k * 30, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  });
+}
+
+// ---- window contents ----
+function itemHtml(x) {
+  const T = x.b ? batchText(x.b) : rowText(x.e);
+  const nm = T.name.old ? `<s>${esc(T.name.old)}</s> → ${esc(T.name.now)}` : esc(T.name.now);
+  return `<button class="it c-${T.g}" ${x.b ? `data-batch="${esc(x.b.key)}"` : `data-ev="${x.e.i}"`}><span class="l1"><b><span class="tg">${esc(T.label)}</span>${nm}${T.folder && !x.b ? '/' : ''}</b><span class="num">${esc(T.meta)}</span></span><span class="l2">${esc(T.place)}</span></button>`;
+}
+function fillList(box, w, f) {
+  const R = S.R, all = eventsOf(R, f);
+  const st = { g: null, shown: 150 };
+  const draw = () => {
+    const items = st.g ? all.filter(e => gOf(e) === st.g) : all;
+    let html = '';
+    if (f.d != null) {
+      const gs = GROUPS.filter(x => all.some(e => gOf(e) === x.g));
+      if (gs.length > 1) html += `<div class="chips"><button class="chip" data-chip="" aria-pressed="${!st.g}">全部</button>${gs.map(x => `<button class="chip" data-chip="${x.g}" aria-pressed="${st.g === x.g}">${x.label} ${fmtNum(filesOf(all.filter(e => gOf(e) === x.g)))}</button>`).join('')}</div>`;
+    }
+    let shown = 0, total = 0;
+    for (const x of GROUPS) {
+      const gi = items.filter(e => gOf(e) === x.g); if (!gi.length) continue;
+      const rows = displayItems(R, gi); total += rows.length;
+      if (shown >= st.shown) continue;
+      html += `<div class="grp c-${x.g}">${x.label}　${fmtNum(filesOf(gi))}</div>`;
+      for (const r of rows) { if (shown >= st.shown) break; html += itemHtml(r); shown++; }
+    }
+    if (total > shown) html += `<button class="more" data-more>再顯示一些（還有 ${fmtNum(total - shown)} 列）</button>`;
+    box.innerHTML = html;
+  };
+  w.st = st; w.draw = draw; draw();
+}
+function sideHtml(D, side) {
+  const had = side === 'b' ? D.had : D.has, at = side === 'b' ? D.A.at : D.B.at;
+  const h = `<h4>${side === 'b' ? '之前' : '之後'} · <span class="num">${fmtMD(at)} ${fmtHM(at)}</span></h4>`;
+  if (!had) return `<div class="side ${side}">${h}<div class="none">${side === 'b' ? '還沒有' : '不在了'}</div></div>`;
+  const [ma, mb] = nameMarks(D.nameA, D.nameB), both = D.had && D.has;
+  const dir = side === 'b' ? D.dirA : D.dirB, other = side === 'b' ? D.dirB : D.dirA;
+  const s = side === 'b' ? D.sA : D.sB, t = side === 'b' ? D.tA : D.tB;
+  return `<div class="side ${side}">${h}<div class="nm">${side === 'b' ? ma : mb}${D.isFolder ? '/' : ''}</div><dl>
+    <dt>位置</dt><dd class="p">${both && side === 'a' && dir === other ? '同左' : pathHtml(dir || '（最上層）', both ? other : null)}</dd>
+    <dt>${D.isFolder ? '內容' : '大小'}</dt><dd class="num">${D.isFolder ? fmtNum(D.n) + ' 個檔 · ' : ''}${fmtBytes(s)}${side === 'a' && both && D.sA !== D.sB ? `（${fmtDelta(D.sB - D.sA)}）` : ''}</dd>
+    ${D.isFolder ? '' : `<dt>修改時間</dt><dd class="num">${fmtTime(t)}</dd>`}</dl></div>`;
+}
+function fillDetail(box, e, child) {
+  const D = detailModel(e, child, S.R);
+  let html = `<div class="kind c-${D.g}">${esc(D.kind)} · ${esc(D.dept)}</div><div class="cmp c-${D.g}">${sideHtml(D, 'b')}${sideHtml(D, 'a')}</div>
+    <div class="acts">${D.has ? `<button class="btn" data-copy="${esc(D.nowPath)}">${ICON.copy}複製現在的位置</button>` : ''}${D.had ? `<button class="btn" data-copy="${esc(D.oldPath)}">${ICON.copy}複製 ${fmtMD(D.A.at)} 快照裡的位置</button>` : ''}</div>`;
+  if (!D.has) html += `<div class="hint">${fmtMD(D.A.at)} 凌晨的快照裡還有，複製位置貼到檔案總管就能找回來。</div>`;
+  if (e.k === 'mov' && !e.sure && !child) html += '<div class="hint">名字和位置都不一樣，是靠大小與修改時間配起來的，可能不是同一個檔。</div>';
+  if (D.isFolder) html += `<div class="files">${D.files.slice(0, 300).map((f, k) => `<button data-file="${k}"><span>${esc(f.r.split('\\').join(' / '))}</span><span class="num">${fmtBytes(f.s)}</span></button>`).join('')}</div>`;
+  box.innerHTML = html;
+}
+function fillBatch(box, b) {
+  box.innerHTML = `<div class="kind c-${b.g}">這個資料夾${esc(BATCH_VERB[b.g])} ${fmtNum(b.n)} 個檔 · ${esc(deptName(b.d))}</div>
+    <div class="hint" style="margin:0 0 8px">${esc(where(b.p))}</div>
+    <div class="acts" style="margin:0 0 10px"><button class="btn" data-copy="${esc(DATA.drive + '\\' + b.p)}">${ICON.copy}複製資料夾的位置</button></div>
+    ${b.items.slice().sort((p, q) => (baseOf(p.p) < baseOf(q.p) ? -1 : 1)).map(e => itemHtml({ e })).join('')}`;
+}
+
+function setRange(id) {
+  S.R = rangeById(id); tellRange(S.R);
+  S.wins.slice().forEach(closeWin);
+  renderMenu(); renderDesk();
+  [...document.querySelectorAll('.wd')].forEach((el, k) => animate(el, [{ transform: 'translateY(10px) scale(.985)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 320, delay: k * 50, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+}
+
+// ---- events ----
+document.addEventListener('click', ev => {
+  const t = ev.target;
+  if (t.closest('[data-copy]')) return;
+  const r = t.closest('[data-range]'); if (r) { setRange(r.dataset.range); return; }
+  const a = t.closest('[data-act]'); if (a) { if (a.dataset.act === 'tile') tile(); else S.wins.slice().forEach(closeWin); return; }
+  const dk = t.closest('[data-dock]'); if (dk) { const w = S.wins.find(x => x.key === dk.dataset.dock); if (w) restore(w); return; }
+  const winEl = t.closest('.win'); const w = winEl && S.wins.find(x => x.el === winEl);
+  if (w) front(w);
+  const wb = t.closest('[data-w]'); if (wb && w) { wb.dataset.w === 'close' ? closeWin(w) : minimize(w); return; }
+  const ch = t.closest('[data-chip]'); if (ch && w) { w.st.g = ch.dataset.chip || null; w.st.shown = 150; w.draw(); return; }
+  const m = t.closest('[data-more]'); if (m && w) { w.st.shown += 300; w.draw(); return; }
+  const d = t.closest('[data-d]'); if (d) { const i = +d.dataset.d; openWin('d:' + i, DATA.depts[i].name, `${fmtNum(summary(S.R).dept[i].total)} 個檔有變化`, null, (box, ww) => fillList(box, ww, { d: i }), d); return; }
+  const g = t.closest('[data-g]'); if (g) { const gg = g.dataset.g; openWin('g:' + gg, '全部的' + GL[gg], '', gg, (box, ww) => fillList(box, ww, { g: gg }), g); return; }
+  const b = t.closest('[data-batch]'); if (b) { const bb = rangeBatches(S.R).get(b.dataset.batch); openWin('b:' + bb.key, baseOf(bb.p) || '最上層', BATCH_VERB[bb.g], bb.g, box => fillBatch(box, bb), b); return; }
+  const e = t.closest('[data-ev]'); if (e) { const ee = S.R.ev[+e.dataset.ev]; openWin('e:' + ee.i, baseOf(ee.p), typeLabel(ee), gOf(ee), box => fillDetail(box, ee), e); return; }
+  const f = t.closest('[data-file]'); if (f && w) { const pe = S.R.ev[+w.key.slice(2)], k = +f.dataset.file; openWin(w.key + ':f' + k, baseOf(pe.f[k].r), '', gOf(pe), box => fillDetail(box, pe, pe.f[k]), f); }
+});
+wireCopy(document);
+// drag a window by its title bar
+desk.addEventListener('pointerdown', ev => {
+  const bar = ev.target.closest('.wt'); if (!bar || ev.target.closest('[data-w]')) return;
+  const w = S.wins.find(x => x.el.contains(bar)); if (!w) return;
+  front(w); w.el.classList.add('dragging');
+  const sx = ev.clientX, sy = ev.clientY, ox = w.r.x, oy = w.r.y, D = desk.getBoundingClientRect();
+  bar.setPointerCapture && (() => { try { bar.setPointerCapture(ev.pointerId); } catch {} })();
+  const mv = e => { place(w, { ...w.r, x: Math.min(D.width - 80, Math.max(-w.r.w + 120, ox + e.clientX - sx)), y: Math.min(D.height - 40, Math.max(0, oy + e.clientY - sy)) }); };
+  const up = () => { w.el.classList.remove('dragging'); bar.removeEventListener('pointermove', mv); bar.removeEventListener('pointerup', up); bar.removeEventListener('pointercancel', up); };
+  bar.addEventListener('pointermove', mv); bar.addEventListener('pointerup', up); bar.addEventListener('pointercancel', up);
+});
+document.addEventListener('keydown', ev => {
+  if (ev.key !== 'Escape') return;
+  const top = S.wins.filter(x => !x.min).sort((a, b) => +b.el.style.zIndex - +a.el.style.zIndex)[0];
+  if (top) closeWin(top);
+});
+if (DATA) setRange(startRange());
+</script>
+</body>
+</html>
