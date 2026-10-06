@@ -70,13 +70,13 @@ mark{background:color-mix(in srgb,var(--c,var(--ren)) 22%,transparent);color:inh
 .cols .b{background:var(--before)} .cols .a{background:var(--after)}
 .cols .mid{padding:0;background:var(--panel)}
 .dept{position:sticky;top:38px;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);background:var(--panel);border-bottom:1px solid var(--line)}
-.dept div{padding:8px 16px;font-weight:700}
-.dept .b{background:color-mix(in srgb,var(--before) 70%,var(--panel))}
-.dept small{font-weight:400;color:var(--faint);margin-left:6px}
+.dept div{padding:9px 16px;font-weight:700}
+.dept .b{background:color-mix(in srgb,var(--before) 70%,var(--panel));font-size:18px;font-weight:800}
+.dept small{font-size:12px;font-weight:400;color:var(--faint);margin-left:6px}
 .dept.flash{animation:flash 900ms ease}
 @keyframes flash{0%{box-shadow:inset 3px 0 0 var(--ren)}100%{box-shadow:inset 3px 0 0 transparent}}
-.ctx{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);font-size:11.5px;color:var(--faint)}
-.ctx div{padding:7px 16px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctx{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);font-size:13px;font-weight:600;color:var(--ink2)}
+.ctx div{padding:10px 16px 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ctx .b{background:var(--before)} .ctx .a{background:var(--after)}
 .row{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);width:100%;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .row > div{padding:7px 16px;min-width:0}
@@ -88,7 +88,7 @@ mark{background:color-mix(in srgb,var(--c,var(--ren)) 22%,transparent);color:inh
 .row .g{display:grid;place-items:center;padding:0;background:var(--panel)}
 .cell{display:flex;align-items:baseline;gap:10px;min-width:0}
 .cell .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cell .nm.strong{font-weight:600}
+.cell .nm.strong{font-weight:400}
 .cell .mt{flex:0 0 auto;color:var(--muted)}
 .cell .no{color:var(--faint)}
 .cell .tag{font-size:11px;color:var(--c);font-weight:700;flex:0 0 auto}
