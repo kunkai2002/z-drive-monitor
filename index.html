@@ -7,13 +7,14 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%2326241f%22%2F%3E%3Cpath%20d%3D%22M10%2010h12L10%2022h12%22%20fill%3D%22none%22%20stroke%3D%22%23faf8f4%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
 <title>Z:\ 變化</title>
 <style>
-:root{--paper:#faf8f4;--bar:#fffdf9;--ink:#26241f;--muted:#7a7366;--line:#e4ddd0;--tag:#f1ece2}
+:root{--paper:#faf8f4;--bar:#fffdf9;--ink:#26241f;--muted:#7a7366;--line:#e4ddd0;--tag:#f1ece2;--real:#4a6b42;--real-soft:#e8efe4;--bad:#9c3a2e}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{display:flex;flex-direction:column;background:var(--paper);color:var(--ink);font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
-.bar{flex:none;height:46px;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--bar);border-bottom:1px solid var(--line)}
+.bar{position:relative;z-index:2;flex:none;height:46px;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--bar);border-bottom:1px solid var(--line)}
 .brand{font-size:15px;font-weight:650;white-space:nowrap;letter-spacing:.01em}
-.tag{font-size:11.5px;line-height:1;color:var(--muted);background:var(--tag);border-radius:999px;padding:5px 9px;white-space:nowrap}
+.tag{font-size:11.5px;line-height:1;color:var(--muted);background:var(--tag);border-radius:999px;padding:5px 9px;white-space:nowrap;transition:background .25s,color .25s}
+.tag.real{color:var(--real);background:var(--real-soft)}
 .tabs{position:relative;flex:1 1 auto;min-width:0;height:100%;display:flex;align-items:stretch;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{appearance:none;border:0;background:none;margin:0;padding:0 11px;font:inherit;font-size:14px;color:var(--muted);white-space:nowrap;cursor:pointer;transition:color .2s}
@@ -21,22 +22,34 @@ body{display:flex;flex-direction:column;background:var(--paper);color:var(--ink)
 .tab[aria-selected="true"]{color:var(--ink);font-weight:600}
 .tab:focus-visible{outline:2px solid var(--ink);outline-offset:-6px;border-radius:8px}
 .ink{position:absolute;left:0;bottom:0;height:2px;width:0;border-radius:2px;background:var(--ink);transition:transform .34s cubic-bezier(.2,.8,.2,1),width .34s cubic-bezier(.2,.8,.2,1)}
+.who{appearance:none;border:0;background:none;padding:6px 2px;font:inherit;font-size:13.5px;color:var(--ink);white-space:nowrap;cursor:pointer}
+.who:hover{text-decoration:underline;text-underline-offset:3px}
 .about{font-size:13.5px;color:var(--muted);text-decoration:none;white-space:nowrap}
 .about:hover{color:var(--ink)}
-.stage{position:relative;flex:1 1 auto;min-height:0}
+.login{position:absolute;top:calc(100% + 8px);right:12px;width:272px;padding:16px 16px 14px;background:var(--bar);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 40px -16px rgba(38,36,31,.35)}
+.login[hidden]{display:none}
+.login label{display:block;font-size:12px;color:var(--muted);margin-bottom:10px}
+.login input{display:block;width:100%;margin-top:4px;padding:8px 10px;font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px}
+.login input:focus{outline:2px solid var(--ink);outline-offset:-1px;border-color:transparent}
+.login .row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.login .msg{flex:1;min-height:1.4em;margin:0;font-size:12.5px;line-height:1.4;color:var(--bad)}
+.login button[type=submit]{appearance:none;border:0;border-radius:999px;padding:7px 18px;font:inherit;font-size:13.5px;color:var(--paper);background:var(--ink);cursor:pointer}
+.login button[type=submit]:disabled{opacity:.5;cursor:default}
+.stage{position:relative;z-index:1;flex:1 1 auto;min-height:0}
 .stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--paper);opacity:0}
 @media (max-width:640px){
   .bar{gap:10px;padding:0 12px}
   .brand{display:none}
   .tab{padding:0 9px}
   .tabs{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 14px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 14px),transparent 100%)}
+  .login{left:12px;right:12px;width:auto}
 }
 </style>
 </head>
 <body>
 <header class="bar">
   <span class="brand">Z:\ 變化</span>
-  <span class="tag">假資料</span>
+  <span class="tag" id="tag">假資料</span>
   <nav class="tabs" role="tablist" aria-label="版面">
     <button class="tab" role="tab" data-view="split">前後對照</button>
     <button class="tab" role="tab" data-view="stack">卡片疊放</button>
@@ -46,24 +59,37 @@ body{display:flex;flex-direction:column;background:var(--paper);color:var(--ink)
     <button class="tab" role="tab" data-view="paper">晨報版面</button>
     <span class="ink" id="ink" aria-hidden="true"></span>
   </nav>
+  <button class="who" id="who" type="button" hidden>登入</button>
   <a class="about" href="about.html">說明</a>
+  <form class="login" id="login" hidden>
+    <label>帳號<input name="user" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="32" required></label>
+    <label>密碼<input name="pass" type="password" autocomplete="current-password" maxlength="18" required></label>
+    <div class="row"><p class="msg" id="msg" role="status"></p><button type="submit">登入</button></div>
+  </form>
 </header>
 <main class="stage"><iframe id="view" title="Z:\ 變化"></iframe></main>
 <script>
 const tabs = [...document.querySelectorAll('.tab')], ink = document.getElementById('ink'), frame = document.getElementById('view');
+const tag = document.getElementById('tag'), who = document.getElementById('who'), form = document.getElementById('login'), msg = document.getElementById('msg');
 const VIEWS = tabs.map(t => t.dataset.view);
-let cur = null, range = null;
+// the GitHub page asks the Cloudflare worker; served by the worker itself (local test) it is the same address; a file on disk has no server
+const API = location.protocol === 'file:' ? null : /\.github\.io$/.test(location.hostname) ? 'https://z-drive-monitor.qiaoyuhua2002.workers.dev' : '';
+let cur = null, range = null, shown = false, wait = 0;
 const store = {
   get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* private window */ } },
+  del: k => { try { localStorage.removeItem(k); } catch (e) { /* private window */ } },
 };
 const still = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animateTo(el, frames, ms) {
+  if (still() || !el.animate) return Promise.resolve();
+  const a = el.animate(frames, { duration: ms, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  return new Promise(res => { let done = false; const fin = () => { if (!done) { done = true; res(); } }; a.onfinish = fin; setTimeout(fin, ms + 250); });
+}
 // fade the layout in or out; always settles, even when the page is not painting
 function fade(to, ms) {
   const from = getComputedStyle(frame).opacity;
-  if (still() || !frame.animate) { frame.style.opacity = to; return Promise.resolve(); }
-  const a = frame.animate([{ opacity: from }, { opacity: to }], { duration: ms, easing: 'ease' });
-  return new Promise(res => { let done = false; const fin = () => { if (done) return; done = true; frame.style.opacity = to; res(); }; a.onfinish = fin; setTimeout(fin, ms + 250); });
+  return animateTo(frame, [{ opacity: from }, { opacity: to }], ms).then(() => { frame.style.opacity = to; });
 }
 function placeInk(tab, moving) {
   ink.style.transition = moving && !still() ? '' : 'none';
@@ -71,6 +97,7 @@ function placeInk(tab, moving) {
   ink.style.transform = `translateX(${tab.offsetLeft + 11}px)`;
 }
 const urlOf = id => id + '.html' + (range ? '?r=' + encodeURIComponent(range) : '');
+function load(url) { shown = false; frame.src = url; }
 function show(id, first) {
   if (!VIEWS.includes(id)) id = VIEWS[0];
   if (id === cur) return;
@@ -81,12 +108,17 @@ function show(id, first) {
   tab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: first || still() ? 'auto' : 'smooth' });
   try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// in some browsers */ }
   store.set('zmon.view', id);
-  if (first) { frame.src = urlOf(id); return; }
-  fade(0, 140).then(() => { frame.src = urlOf(cur); });
+  if (first) { load(urlOf(id)); return; }
+  fade(0, 140).then(() => load(urlOf(cur)));
 }
-frame.addEventListener('load', () => { if (frame.getAttribute('src')) fade(1, 240); });
-// the layout says which day it is on, so the next layout opens on the same one
-addEventListener('message', e => { if (e.source === frame.contentWindow && e.data && e.data.zmon === 'range') range = String(e.data.id); });
+function reveal() { if (shown) return; shown = true; clearTimeout(wait); fade(1, 240); }
+// a layout says "ready" once its data is in (real after signing in); if it never does, show it anyway
+frame.addEventListener('load', () => { if (!frame.getAttribute('src')) return; clearTimeout(wait); wait = setTimeout(reveal, 2500); });
+addEventListener('message', e => {
+  if (e.source !== frame.contentWindow || !e.data) return;
+  if (e.data.zmon === 'range') range = String(e.data.id);
+  if (e.data.zmon === 'ready') { tag.textContent = e.data.real ? '真資料' : '假資料'; tag.classList.toggle('real', !!e.data.real); reveal(); }
+});
 tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.view)));
 document.querySelector('.tabs').addEventListener('keydown', e => {
   if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -97,6 +129,49 @@ document.querySelector('.tabs').addEventListener('keydown', e => {
 addEventListener('hashchange', () => show(location.hash.slice(1)));
 addEventListener('resize', () => placeInk(tabs.find(t => t.dataset.view === cur), false));
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => placeInk(tabs.find(t => t.dataset.view === cur), false));
+
+/* ---------- signing in ---------- */
+function session() { try { const s = JSON.parse(store.get('zmon.session') || 'null'); return s && s.token && s.exp > Date.now() / 1000 ? s : null; } catch (e) { return null; } }
+function paintWho() { who.textContent = session() ? '登出' : '登入'; }
+function reloadView() { fade(0, 140).then(() => load(urlOf(cur))); }
+function openForm() {
+  form.hidden = false; msg.textContent = '';
+  animateTo(form, [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], 180);
+  form.elements.user.focus();
+}
+function closeForm() { if (form.hidden) return; animateTo(form, [{ opacity: 1 }, { opacity: 0 }], 120).then(() => { form.hidden = true; }); }
+const minutes = s => Math.max(1, Math.ceil(s / 60));
+async function signIn(user, pass) {
+  const r = await fetch(API + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user, pass }) });
+  const d = await r.json().catch(() => ({}));
+  if (r.ok && d.token) { store.set('zmon.session', JSON.stringify({ token: d.token, exp: d.exp })); return null; }
+  if (r.status === 429) return d.all ? '今天錯太多次，已經鎖到明天。' : `試太多次了，請 ${minutes(d.wait || 900)} 分鐘後再試。`;
+  if (r.status === 401) return d.left > 0 ? `帳號或密碼不對，還可以試 ${d.left} 次。` : '帳號或密碼不對，已經鎖住，請 15 分鐘後再試。';
+  if (r.status === 400) return '密碼最多 18 個字。';
+  return '伺服器出了問題，請稍後再試。';
+}
+if (API != null) {
+  who.hidden = false;
+  paintWho();
+  who.addEventListener('click', () => {
+    if (session()) { store.del('zmon.session'); paintWho(); reloadView(); return; }
+    form.hidden ? openForm() : closeForm();
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = form.querySelector('button[type=submit]'), user = form.elements.user.value.trim(), pass = form.elements.pass.value;
+    if (!user || !pass) return;
+    btn.disabled = true; btn.textContent = '登入中…'; msg.textContent = '';
+    let err;
+    try { err = await signIn(user, pass); } catch (x) { err = '連不上伺服器，請確認網路。'; }
+    btn.disabled = false; btn.textContent = '登入';
+    if (err) { msg.textContent = err; form.elements.pass.select(); return; }
+    form.reset(); closeForm(); paintWho(); reloadView();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeForm(); });
+  document.addEventListener('pointerdown', e => { if (!form.hidden && !form.contains(e.target) && e.target !== who) closeForm(); });
+  addEventListener('blur', () => closeForm());
+}
 show(location.hash.slice(1) || store.get('zmon.view') || VIEWS[0], true);
 </script>
 </body>
